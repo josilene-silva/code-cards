@@ -1,4 +1,4 @@
-package com.anonymous.codecards
+package com.josilenesilva.codecards
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

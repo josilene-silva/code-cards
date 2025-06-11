@@ -8,30 +8,32 @@
     "scheme": "codecards",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#5390D9"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.codecards"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "package": "com.josilenesilva.codecards",
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-router",
+      "@react-native-firebase/app",
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash.png",
           "resizeMode": "contain",
           "backgroundColor": "#A2CAFF"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.0.21"
+          }
         }
       ]
     ],

@@ -1,4 +1,4 @@
-package com.anonymous.codecards
+package com.josilenesilva.codecards
 
 import android.app.Application
 import android.content.res.Configuration

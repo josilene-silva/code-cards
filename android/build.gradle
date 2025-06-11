@@ -1,18 +1,15 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-  ext {
-        kotlinVersion = '2.0.21' // Defina explicitamente sua versão alvo do Kotlin aqui
-    }
   repositories {
     google()
     mavenCentral()
   }
   dependencies {
+        classpath 'com.google.gms:google-services:4.4.1'
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion") // Use a variável definida
-
+    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
   }
 }
 
