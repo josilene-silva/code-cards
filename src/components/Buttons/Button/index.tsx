@@ -5,24 +5,25 @@ import { ButtonText, StyledButtonContainer } from './style';
 
 interface IButtonProps extends PressableProps {
   // Propriedades de Estilo
-  bgColor?: string;
-  textColor?: string;
-  fontFamily?: string;
+  readonly bgColor?: string;
+  readonly textColor?: string;
+  readonly fontFamily?: string;
 
   // Propriedades de Margem (mais flexíveis)
-  margin?: number | string;
-  marginTop?: number | string;
-  marginRight?: number | string;
-  marginBottom?: number | string;
-  marginLeft?: number | string;
-  fullWidth?: boolean;
+  readonly margin?: number | string;
+  readonly marginTop?: number | string;
+  readonly marginRight?: number | string;
+  readonly marginBottom?: number | string;
+  readonly marginLeft?: number | string;
+  readonly fullWidth?: boolean;
+  readonly width?: string;
 
   // Ícone
-  Icon?: React.ReactNode;
+  readonly Icon?: React.ReactNode;
 
   // Sombra
-  withShadow?: boolean;
-  shadowStyle?: StyleProp<ViewStyle>;
+  readonly withShadow?: boolean;
+  readonly shadowStyle?: StyleProp<ViewStyle>;
 }
 
 export function Button({
@@ -37,6 +38,7 @@ export function Button({
   marginRight,
   marginBottom,
   marginLeft,
+  width,
   fullWidth = false,
   withShadow = true,
   shadowStyle,
@@ -46,6 +48,7 @@ export function Button({
     <StyledButtonContainer
       {...pressableProps}
       onPress={onPress}
+      width={width}
       fullWidth={fullWidth}
       bgColor={bgColor}
       margin={margin}

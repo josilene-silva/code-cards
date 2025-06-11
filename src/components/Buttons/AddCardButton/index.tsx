@@ -2,7 +2,7 @@ import theme from '@/src/shared/theme/theme';
 import { Feather } from '@expo/vector-icons';
 import { Button } from '../Button';
 
-export function AddCardButton() {
+export function AddCardButton({ onButtonPress }: { onButtonPress?: () => void }) {
   return (
     <Button
       Icon={<Feather name="plus" size={32} color={theme.colors.tertiary} />}
@@ -11,7 +11,7 @@ export function AddCardButton() {
       fontFamily={theme.fonts.regular}
       marginTop="20"
       withShadow={false}
-      onPress={() => console.log('Alternative Button Pressed')}
+      onPress={onButtonPress}
     >
       Adicionar cartão
     </Button>

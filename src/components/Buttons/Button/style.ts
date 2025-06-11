@@ -6,7 +6,7 @@ import { IButtonText, IContainer } from './interfaces';
 export const StyledButtonContainer = styled(BaseButton)<IContainer>`
   background-color: ${(props: any) => props.bgColor || props.theme.colors.primary};
   padding: 15px 40px;
-  width: ${({ fullWidth }: IContainer) => (fullWidth ? '80%' : 'auto')};
+  width: ${({ fullWidth, width }: IContainer) => (fullWidth ? '80%' : (width ?? 'auto'))};
   border-radius: 10000px;
 
   margin-top: ${({ marginTop }: IContainer) => getMargin(marginTop)};
