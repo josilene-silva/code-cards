@@ -1,4 +1,4 @@
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 import { Button } from '../../Buttons';
 import { CustomModal, CustomModalProps } from '../CustomModal';
 import { ActionsContainer, ModalSubTitle, ModalTitle } from './styles';

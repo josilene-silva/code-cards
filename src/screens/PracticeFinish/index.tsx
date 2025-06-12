@@ -4,7 +4,7 @@ import { ButtonContainer, Container, GoBackButton, ReviewSubTitle, ReviewTitle }
 
 import Celebration from '@/assets/images/celebration.svg';
 import { Button } from '@/src/components/Buttons';
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 import { router } from 'expo-router';
 
 export function PracticeFinish() {

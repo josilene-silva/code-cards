@@ -5,7 +5,7 @@ import Dots from '@/assets/images/dots.svg';
 import { Button } from '@/src/components/Buttons';
 import { Header } from '@/src/components/Header';
 import { LoadingOverlay } from '@/src/components/LoadingOverlay';
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 import { router } from 'expo-router';
 import {
   BackText,

@@ -3,7 +3,7 @@ import { Button } from '@/src/components/Buttons';
 import { AddCardButton } from '@/src/components/Buttons/AddCardButton';
 import { Input } from '@/src/components/Forms/Input';
 import { Header } from '@/src/components/Header';
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 
 import {
   SchemaCollection,

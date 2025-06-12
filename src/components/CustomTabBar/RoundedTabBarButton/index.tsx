@@ -1,4 +1,4 @@
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { ParamListBase, RouteProp } from '@react-navigation/native';
 import { useCallback } from 'react';

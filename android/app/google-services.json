@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "1084557519382-qpm71ivjh1sag6r406n6ojcf0ffp8upb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.josilenesilva.codecards",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
           "client_id": "1084557519382-a8netfgn2v6bootlmkfaq95jjcta2in6.apps.googleusercontent.com",
           "client_type": 3
         }

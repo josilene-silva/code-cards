@@ -27,6 +27,7 @@ export const GreetingContainer = styled.View`
   flex-direction: row;
   margin-top: 24px;
   width: 100%;
+  align-items: center;
 `;
 
 export const GreetingText = styled.Text`
@@ -40,6 +41,7 @@ export const GreetingUseNameText = styled.Text`
   font-family: ${(props: any) => props.theme.fonts.semiBold};
   color: ${(props: any) => props.theme.colors.tertiary};
   margin-left: 4px;
+  margin-right: 10px;
 `;
 
 export const SectionTitle = styled.Text`

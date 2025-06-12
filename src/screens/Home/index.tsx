@@ -23,9 +23,14 @@ import Python from '@/assets/images/languages/python.svg';
 import { CardModel, CardType } from '@/src/components/Cards/CardModel';
 
 import EmptyCard from '@/assets/images/card/empty.svg';
+import theme from '@/src/shared/theme';
+import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useHome } from './useHome';
 
 export function Home() {
+  const { userName, onLogoutPress } = useHome();
+
   const renderCollectionItem = useCallback(
     ({ item }: { item: { title: string; subTitle: string } }) => (
       <CardModel
@@ -57,7 +62,8 @@ export function Home() {
 
       <GreetingContainer>
         <GreetingText>Olá,</GreetingText>
-        <GreetingUseNameText>José!</GreetingUseNameText>
+        <GreetingUseNameText>{userName}!</GreetingUseNameText>
+        <Feather name="log-out" size={24} color={theme.colors.tertiary} onPress={onLogoutPress} />
       </GreetingContainer>
 
       <SectionTitle>Linguagens/frameworks</SectionTitle>

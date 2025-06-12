@@ -1,12 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
 import React from 'react';
 
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 import { CustomTabBar } from '../../components/CustomTabBar';
-
-SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   return (

@@ -1,4 +1,4 @@
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { Button } from '../Button';
 

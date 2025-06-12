@@ -12,7 +12,7 @@ import {
 } from './styles';
 
 import { Button } from '@/src/components/Buttons';
-import theme from '@/src/shared/theme/theme';
+import theme from '@/src/shared/theme';
 import { router } from 'expo-router';
 
 import { AddCardButton } from '@/src/components/Buttons/AddCardButton';

@@ -1,9 +1,13 @@
-import { router } from 'expo-router';
+import { useAppDispatch } from '@/src/shared/hooks/useAppDispatch';
+import { signInWithGoogle } from '@/src/shared/store/auth';
 
 export const useLogin = () => {
-  const handleGoogleLogin = () => {
-    console.log('Entrar com Google');
-    router.navigate('/(tabs)/(home)');
+  const dispatch = useAppDispatch();
+
+  const handleGoogleLogin = async () => {
+    await dispatch(signInWithGoogle());
+
+    // router.navigate('/(tabs)/(home)');
   };
 
   return {
