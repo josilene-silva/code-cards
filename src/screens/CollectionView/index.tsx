@@ -1,4 +1,7 @@
+import { Feather } from '@expo/vector-icons';
 import { useCallback } from 'react';
+import { View } from 'react-native';
+
 import {
   AboutContainer,
   AboutText,
@@ -13,42 +16,51 @@ import {
 
 import { Button } from '@/src/components/Buttons';
 import theme from '@/src/shared/theme';
-import { router } from 'expo-router';
 
 import { AddCardButton } from '@/src/components/Buttons/AddCardButton';
 import { CardModel, CardType } from '@/src/components/Cards/CardModel';
+import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 import { Modal } from '@/src/components/Modals/Modal';
-import { Feather } from '@expo/vector-icons';
-import { View } from 'react-native';
+import { ICard } from '@/src/shared/interfaces/ICard';
+import { UseCollectionView } from './useCollectionView';
 
 export function CollectionView() {
+  const {
+    selectedCollection,
+    cardsInSelectedCollection,
+    handleGotToPractice,
+    loadingCards,
+    handleOpenModalDeleteCollection,
+    handleOpenModalDeleteCard,
+    isModalVisible,
+    handleDeleteCollection,
+    handleDeleteCard,
+    handleGoBack,
+  } = UseCollectionView();
+
   const renderCardItem = useCallback(
-    ({ item }: { item: { title: string; subTitle: string } }) => (
+    ({ item }: { item: ICard }) => (
       <CardContainer>
         <CardModel
-          title={item.title}
-          subTitle={item.subTitle}
+          actions={{
+            onDelete: () => handleOpenModalDeleteCard(item.id),
+            onEdit: () => console.log('Edit pressed'),
+          }}
+          title={item.front}
+          subTitle={item.back}
           type={CardType.card}
-          onPress={() => router.navigate('/(tabs)/(home)/collection-view')}
+          editing
         />
       </CardContainer>
     ),
-    [],
+    [handleOpenModalDeleteCard],
   );
 
   const ListCollectionHeader = useCallback(() => {
     return (
       <View>
-        <Modal
-          isVisible={false}
-          title="Tem certeza que deseja excluir este cartão?"
-          subTitle="Essa ação não poderá ser revertida"
-          rightButtonText="Excluir"
-          leftButtonText="Manter"
-          onClose={() => console.log('Modal closed')}
-          leftButtonOnPress={() => console.log('Manter pressed')}
-          rightButtonOnPress={() => console.log('Excluir pressed')}
-        />
+        <Modal {...isModalVisible.deleteCard} rightButtonOnPress={handleDeleteCard} />
+        <Modal {...isModalVisible.deleteCollection} rightButtonOnPress={handleDeleteCollection} />
 
         <HeaderContainer>
           <Feather
@@ -56,24 +68,21 @@ export function CollectionView() {
             size={40}
             color={theme.colors.textInvert}
             style={{ marginRight: 10 }}
-            onPress={() => router.back()}
+            onPress={handleGoBack}
           />
-          <HeaderTitle> Estudo de estruturas de repetição</HeaderTitle>
+          <HeaderTitle>{selectedCollection?.name}</HeaderTitle>
         </HeaderContainer>
 
         <AboutContainer>
           <ActionsContainer>
-            <Button
-              onPress={() => router.push('/(tabs)/(home)/practice')}
-              bgColor={theme.colors.tertiary}
-            >
+            <Button onPress={handleGotToPractice} bgColor={theme.colors.tertiary}>
               Iniciar prática
             </Button>
             <ActionsSubContainer>
               <Feather
                 name="trash"
                 size={24}
-                onPress={() => console.log('Delete pressed')}
+                onPress={handleOpenModalDeleteCollection}
                 color="#F23333"
               />
               <Feather
@@ -86,31 +95,31 @@ export function CollectionView() {
           </ActionsContainer>
 
           <AboutTitle>Sobre</AboutTitle>
-          <AboutText>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra ipsum ac tempor
-            ornare. Sed imperdiet at lectus non tristique. Ut pellentesque lorem quis
-          </AboutText>
+          <AboutText>{selectedCollection?.description}</AboutText>
 
           <AddCardButton />
         </AboutContainer>
       </View>
     );
-  }, []);
+  }, [
+    handleGotToPractice,
+    selectedCollection?.description,
+    selectedCollection?.name,
+    handleOpenModalDeleteCollection,
+    handleDeleteCard,
+    handleDeleteCollection,
+    isModalVisible.deleteCard,
+    isModalVisible.deleteCollection,
+    handleGoBack,
+  ]);
+
+  if (loadingCards) {
+    return <LoadingOverlay isVisible />;
+  }
 
   return (
-    <CardsList
-      data={[
-        {
-          title: 'Estruturas de repetição',
-          subTitle:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra ipsum ac tempor ornare. Sed imperdiet at lectus non tristique. Ut pellentesque lorem quis',
-        },
-        {
-          title: 'Lorem ipsum',
-          subTitle:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra ipsum ac tempor ornare. Sed imperdiet at lectus non tristique. Ut pellentesque lorem quis',
-        },
-      ]}
+    <CardsList<ICard>
+      data={cardsInSelectedCollection}
       ListHeaderComponent={ListCollectionHeader}
       renderItem={renderCardItem}
     />

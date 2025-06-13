@@ -10,6 +10,7 @@ export function AddCardButton({ onButtonPress }: { onButtonPress?: () => void })
       textColor={theme.colors.tertiary}
       fontFamily={theme.fonts.regular}
       marginTop="20"
+      marginBottom="20"
       withShadow={false}
       onPress={onButtonPress}
     >

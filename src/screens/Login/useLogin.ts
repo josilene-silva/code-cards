@@ -6,8 +6,6 @@ export const useLogin = () => {
 
   const handleGoogleLogin = async () => {
     await dispatch(signInWithGoogle());
-
-    // router.navigate('/(tabs)/(home)');
   };
 
   return {

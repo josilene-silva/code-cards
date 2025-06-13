@@ -20,9 +20,22 @@ interface ICardModelProps extends PressableProps {
   subTitle: string;
   type: CardType;
   amount?: number;
+  editing?: boolean;
+  actions?: {
+    onDelete?: () => void;
+    onEdit?: () => void;
+  };
 }
 
-export function CardModel({ title, subTitle, type, amount, ...props }: ICardModelProps) {
+export function CardModel({
+  title,
+  subTitle,
+  type,
+  amount,
+  editing,
+  actions,
+  ...props
+}: Readonly<ICardModelProps>) {
   const getLabel = () => {
     return amount === 1 ? `${amount} cartão` : `${amount} cartões`;
   };
@@ -40,20 +53,10 @@ export function CardModel({ title, subTitle, type, amount, ...props }: ICardMode
           </>
         )}
 
-        {type === CardType.card && (
+        {type === CardType.card && editing && (
           <ActionsContainer>
-            <Feather
-              name="trash"
-              size={24}
-              onPress={() => console.log('Delete pressed')}
-              color="#F23333"
-            />
-            <Feather
-              name="edit-3"
-              size={24}
-              color="#000"
-              onPress={() => console.log('Edit pressed')}
-            />
+            <Feather name="trash" size={24} onPress={actions?.onDelete} color="#F23333" />
+            <Feather name="edit-3" size={24} color="#000" onPress={actions?.onEdit} />
           </ActionsContainer>
         )}
       </Container>

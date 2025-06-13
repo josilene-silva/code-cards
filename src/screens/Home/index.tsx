@@ -1,4 +1,13 @@
+import { Feather } from '@expo/vector-icons';
 import React, { useCallback } from 'react';
+
+import EmptyCard from '@/assets/images/card/empty.svg';
+import Logo from '@/assets/images/icon/logo.svg';
+import JavaScript from '@/assets/images/languages/javascript.svg';
+import Python from '@/assets/images/languages/python.svg';
+import { CardModel, CardType } from '@/src/components/Cards/CardModel';
+import { ICollection } from '@/src/shared/interfaces/ICollection';
+import theme from '@/src/shared/theme';
 import {
   CardContainer,
   CardListContainer,
@@ -15,32 +24,21 @@ import {
   Title,
 } from './styles';
 
-import Logo from '@/assets/images/icon/logo.svg';
-
-import JavaScript from '@/assets/images/languages/javascript.svg';
-import Python from '@/assets/images/languages/python.svg';
-
-import { CardModel, CardType } from '@/src/components/Cards/CardModel';
-
-import EmptyCard from '@/assets/images/card/empty.svg';
-import theme from '@/src/shared/theme';
-import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useHome } from './useHome';
 
 export function Home() {
-  const { userName, onLogoutPress } = useHome();
+  const { userName, onLogoutPress, collections, onPressCollection, router } = useHome();
 
   const renderCollectionItem = useCallback(
-    ({ item }: { item: { title: string; subTitle: string } }) => (
+    ({ item }: { item: ICollection }) => (
       <CardModel
-        title={item.title}
-        subTitle={item.subTitle}
+        title={item.name}
+        subTitle={item.description}
         type={CardType.collection}
-        onPress={() => router.navigate('/(tabs)/(home)/collection-view')}
+        onPress={() => onPressCollection(item)}
       />
     ),
-    [],
+    [onPressCollection],
   );
 
   const ListCollectionEmpty = useCallback(
@@ -90,16 +88,7 @@ export function Home() {
 
   return (
     <Container
-      data={[
-        {
-          id: '1',
-          title: 'Estruturas de repetição',
-          subTitle:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra ipsum ac tempor ornare. Sed imperdiet at lectus non tristique. Ut pellentesque lorem quis',
-        },
-        { id: '2', title: 'Loops', subTitle: 'Descrição da coleção 2' },
-        { id: '3', title: 'Condicionais', subTitle: 'Descrição da coleção 3' },
-      ]}
+      data={collections}
       ListHeaderComponent={ListCollectionHeader}
       renderItem={renderCollectionItem}
       ListEmptyComponent={ListCollectionEmpty}

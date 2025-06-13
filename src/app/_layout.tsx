@@ -3,10 +3,13 @@ import { router, SplashScreen, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message'; // Importe o Toast
 import { Provider } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 
 import { useEffect } from 'react';
+import { LogBox } from 'react-native';
+import { toastConfig } from '../shared/config/toast';
 import { useAppDispatch, useAppSelector } from '../shared/hooks';
 import { store } from '../shared/store';
 import { checkAuthStatus, selectAuthState } from '../shared/store/auth';
@@ -54,6 +57,14 @@ export default function RootLayout() {
     FredokaSemiBold: require('../../assets/fonts/Fredoka/Fredoka-SemiBold.ttf'),
   });
 
+  useEffect(() => {
+    // This is a workaround to ensure the splash screen is hidden after fonts are loaded
+    LogBox.ignoreLogs([
+      'A non-serializable value was detected in the state',
+      'This method is deprecated',
+    ]);
+  }, []);
+
   if (!loaded) {
     return null;
   }
@@ -65,6 +76,7 @@ export default function RootLayout() {
         <SafeAreaView style={{ flex: 1 }}>
           <ThemeProvider theme={theme}>
             <RootLayoutContent />
+            <Toast config={toastConfig} />
           </ThemeProvider>
         </SafeAreaView>
       </GestureHandlerRootView>

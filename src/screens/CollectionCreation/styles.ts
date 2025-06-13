@@ -8,14 +8,22 @@ export const Container = styled.View`
   background-color: ${({ theme }: any) => theme.colors.background};
 `;
 
-export const ScrollContainer = styled.ScrollView`
-  padding: 36px 24px 50px;
+export const ScrollContainer = styled.ScrollView.attrs({
+  showsVerticalScrollIndicator: false,
+  contentContainerStyle: {
+    paddingBottom: 200,
+  },
+})`
+  padding: 36px 24px 00px;
+  padding-bottom: 100px;
 `;
 
 export const ButtonContainer = styled.View`
+  position: absolute;
   margin: 0 24px;
-  margin-bottom: 20px;
-  background-color: ${({ theme }: any) => theme.colors.background};
+  bottom: 24px;
+  left: 0;
+  right: 0;
 `;
 
 export const BottomSheetTitle = styled.Text`

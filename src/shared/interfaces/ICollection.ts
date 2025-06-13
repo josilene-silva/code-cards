@@ -1,11 +1,21 @@
 import { ICard } from './ICard';
-import { IPractice } from './IPractice';
 
 export interface ICollection {
   id: string;
   name: string;
   description: string;
-  category: { name: string };
-  cards: ICard[];
-  practices: IPractice[];
+  isPublic?: boolean;
+
+  categoryId?: string;
+  categoryName?: string;
+
+  cards?: ICard[];
+
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+// Tipo para dados de um novo item
+export type NewCollection = Omit<ICollection, 'id' | 'createdAt' | 'updatedAt'>;
+
+export type UpdateCollection = Partial<Omit<ICollection, 'id'>> & { id: string };

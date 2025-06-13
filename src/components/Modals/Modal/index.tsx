@@ -3,9 +3,9 @@ import { Button } from '../../Buttons';
 import { CustomModal, CustomModalProps } from '../CustomModal';
 import { ActionsContainer, ModalSubTitle, ModalTitle } from './styles';
 
-type ModalProps = Omit<CustomModalProps, 'children'> & {
+export type ModalProps = Omit<CustomModalProps, 'children'> & {
   title: string;
-  subTitle: string;
+  subTitle?: string;
 
   rightButtonText?: string;
   rightButtonOnPress?: () => any;
@@ -26,15 +26,19 @@ export function Modal({
   return (
     <CustomModal contentWidth="85%" contentHeight="auto" contentStyle={{ gap: 22 }} {...props}>
       <ModalTitle>{title}</ModalTitle>
-      <ModalSubTitle>{subTitle}</ModalSubTitle>
+      {subTitle && <ModalSubTitle>{subTitle}</ModalSubTitle>}
 
       <ActionsContainer>
-        <Button bgColor={theme.colors.tertiary} onPress={leftButtonOnPress}>
-          {leftButtonText || ''}
-        </Button>
-        <Button bgColor={theme.colors.error} onPress={rightButtonOnPress}>
-          {rightButtonText || ''}
-        </Button>
+        {leftButtonText && (
+          <Button bgColor={theme.colors.tertiary} onPress={leftButtonOnPress}>
+            {leftButtonText}
+          </Button>
+        )}
+        {rightButtonText && (
+          <Button bgColor={theme.colors.error} onPress={rightButtonOnPress}>
+            {rightButtonText}
+          </Button>
+        )}
       </ActionsContainer>
     </CustomModal>
   );

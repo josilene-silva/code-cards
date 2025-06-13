@@ -14,10 +14,10 @@ interface LoadingOverlayProps {
 
 export const LoadingOverlay: FC<LoadingOverlayProps> = ({
   isVisible,
-  message = 'Carregando...', // Mensagem padrão
   overlayColor,
   containerStyle,
   textStyle,
+  message = 'Carregando...', // Mensagem padrão
 }) => {
   if (!isVisible) {
     return null;
@@ -27,7 +27,7 @@ export const LoadingOverlay: FC<LoadingOverlayProps> = ({
     <Modal transparent={true} animationType="fade" statusBarTranslucent={true}>
       <Overlay style={overlayColor ? { backgroundColor: overlayColor } : {}}>
         <LoadingContainer style={containerStyle}>
-          <Image style={{ width: 350, height: 350 }} source={LoadingGif} resizeMode="contain" />
+          <Image style={{ width: 200, height: 200 }} source={LoadingGif} resizeMode="contain" />
           {message && <LoadingText style={textStyle}>{message}</LoadingText>}
         </LoadingContainer>
       </Overlay>
