@@ -28,15 +28,8 @@ import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 import { useHome } from './useHome';
 
 export function Home() {
-  const {
-    userName,
-    onLogoutPress,
-    collections,
-    onPressCollection,
-    router,
-    handleRefresh,
-    isLoading,
-  } = useHome();
+  const { userName, onLogoutPress, collections, onPressCollection, router, loadData, isLoading } =
+    useHome();
 
   const renderCollectionItem = useCallback(
     ({ item }: { item: ICollection }) => (
@@ -119,7 +112,7 @@ export function Home() {
       ListHeaderComponent={ListCollectionHeader}
       renderItem={renderCollectionItem}
       ListEmptyComponent={ListCollectionEmpty}
-      handleRefresh={handleRefresh}
+      handleRefresh={loadData}
     />
   );
 }

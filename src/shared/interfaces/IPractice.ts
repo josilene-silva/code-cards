@@ -1,8 +1,6 @@
 export interface IPractice {
   id: string;
 
-  userId?: string; // ID do usuário
-
   collectionId: string;
   collectionName: string;
 

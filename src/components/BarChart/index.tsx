@@ -13,7 +13,7 @@ interface IBarChartProps {
 
 export function BarChart({ data }: IBarChartProps) {
   const getPercentage = (value: number) => {
-    return (value * 100) / data.total;
+    return ((value * 100) / data.total).toFixed(1);
   };
 
   return (

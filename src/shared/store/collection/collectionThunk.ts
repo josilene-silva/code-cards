@@ -1,12 +1,18 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import * as collectionService from '../../api/firebase/collectionService';
 
+import { practiceService } from '../../api/firebase/practiceService';
 import { userCollectionService } from '../../api/firebase/userCollectionService';
 import { ICard, NewCard, UpdateCard } from '../../interfaces/ICard';
-import { ICollection, NewCollection, UpdateCollection } from '../../interfaces/ICollection';
-import { NewUserCollection } from '../../interfaces/IUserCollection';
 import {
-  addCardOptimistic,
+  CollectionWithUserPractices,
+  ICollection,
+  NewCollection,
+  UpdateCollection,
+} from '../../interfaces/ICollection';
+import { NewUserCollection } from '../../interfaces/IUserCollection';
+import { setSelectedPractice } from '../auth';
+import {
   addCollectionOptimistic,
   removeCardOptimistic,
   setCardsError,
@@ -15,6 +21,7 @@ import {
   setCollections,
   setCollectionsError,
   setCollectionsLoading,
+  setCollectionsWithUserPractices,
   setSelectedCollection,
   updateCardOptimistic,
   updateCollectionOptimistic,
@@ -199,17 +206,8 @@ export const createCard = createAsyncThunk(
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const tempId = `temp-card-${Date.now()}`;
-      const cardWithTempId: ICard = {
-        id: tempId,
-        collectionId: collectionId,
-        ...newCardData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      dispatch(addCardOptimistic(cardWithTempId));
-
       const createdCard = await collectionService.createCard(collectionId, newCardData);
+
       return createdCard;
     } catch (error: any) {
       dispatch(setCardsError(error.message ?? 'Failed to create card.'));
@@ -276,6 +274,110 @@ export const deleteCard = createAsyncThunk(
       return cardId;
     } catch (error: any) {
       dispatch(setCardsError(error.message ?? 'Failed to delete card.'));
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
+// --- NOVO THUNK: Buscar Coleções com Dados de Práticas do Usuário ---
+export const fetchCollectionsWithUserPractices = createAsyncThunk(
+  'collections/fetchCollectionsWithUserPractices',
+  async (_, { dispatch, rejectWithValue, getState }) => {
+    dispatch(setCollectionsLoading(true)); // Usa o mesmo loading, ou crie um novo para esta operação
+
+    try {
+      const userId = (getState() as RootState).auth.user?.id;
+      if (!userId) {
+        throw new Error('User not authenticated.');
+      }
+
+      // 1. Obter todas as práticas do usuário
+      const userPractices = await practiceService.getUserPractices(userId);
+
+      if (userPractices.length === 0) {
+        dispatch(setCollectionsWithUserPractices([])); // Nenhuma prática, então nenhuma coleção com práticas
+        return [];
+      }
+
+      // 2. Extrair IDs únicos das coleções das práticas
+      const uniqueCollectionIds = [
+        ...new Set(userPractices.map((practice) => practice.collectionId)),
+      ];
+
+      // 3. Obter os detalhes das coleções correspondentes a esses IDs
+      const fetchedCollections: ICollection[] = [];
+      const BATCH_SIZE = 10;
+
+      for (let i = 0; i < uniqueCollectionIds.length; i += BATCH_SIZE) {
+        const batchIds = uniqueCollectionIds.slice(i, i + BATCH_SIZE);
+        const collectionsBatch = await collectionService.getCollectionsByIds(batchIds);
+        fetchedCollections.push(...collectionsBatch);
+      }
+
+      // 4. Mapear e combinar os dados: Agrupar práticas por coleção
+      const collectionsMap = new Map<string, CollectionWithUserPractices>();
+
+      // Inicializa o mapa com as coleções fetched
+      fetchedCollections.forEach((col) => {
+        collectionsMap.set(col.id, {
+          ...col,
+          userPractices: [],
+          totalPracticeSessions: 0,
+          totalCardsPracticed: 0,
+          lastPracticeTime: undefined,
+        });
+      });
+
+      // Adiciona as práticas a suas respectivas coleções e calcula os sumários
+      userPractices.forEach((practice) => {
+        const collectionData = collectionsMap.get(practice.collectionId);
+        if (collectionData) {
+          collectionData.userPractices.push(practice);
+          collectionData.totalPracticeSessions++;
+          collectionData.totalCardsPracticed += practice.cardsAmount;
+          // Atualiza lastPracticeTime se esta prática for mais recente
+          if (
+            !collectionData.lastPracticeTime ||
+            (practice.endTime && practice.endTime > collectionData.lastPracticeTime)
+          ) {
+            collectionData.lastPracticeTime = practice.endTime;
+          }
+        }
+      });
+
+      // Opcional: Ordenar as práticas dentro de cada coleção (por startTime, por exemplo)
+      // collectionsMap.forEach(col => {
+      //   col.userPractices.sort((a, b) => {
+      //     if (a.startTime && b.startTime) {
+      //       return new Date(b.startTime).getTime() - new Date(a.startTime).getTime(); // Mais recente primeiro
+      //     }
+      //     return 0;
+      //   });
+      // });
+
+      // Converte o mapa de volta para um array para o Redux
+      const combinedCollections = Array.from(collectionsMap.values());
+
+      // Opcional: Ordenar as próprias coleções combinadas (ex: por nome ou por lastPracticeTime)
+      combinedCollections.sort((a, b) => {
+        if (a.lastPracticeTime && b.lastPracticeTime) {
+          return new Date(b.lastPracticeTime).getTime() - new Date(a.lastPracticeTime).getTime(); // Coleções com prática mais recente primeiro
+        }
+        if (a.name && b.name) {
+          // Fallback para ordenar por nome se não houver tempo de última prática
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
+      });
+
+      dispatch(setSelectedPractice(null));
+
+      dispatch(setCollectionsWithUserPractices(combinedCollections));
+      return combinedCollections;
+    } catch (error: any) {
+      dispatch(
+        setCollectionsError(error.message || 'Failed to fetch collections with user practices.'),
+      );
       return rejectWithValue(error.message);
     }
   },

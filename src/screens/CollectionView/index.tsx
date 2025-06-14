@@ -8,6 +8,9 @@ import {
   AboutTitle,
   ActionsContainer,
   ActionsSubContainer,
+  BottomSheetContainer,
+  BottomSheetTitle,
+  BottomSheetTitleContainer,
   CardContainer,
   CardsList,
   HeaderContainer,
@@ -19,9 +22,11 @@ import theme from '@/src/shared/theme';
 
 import { AddCardButton } from '@/src/components/Buttons/AddCardButton';
 import { CardModel, CardType } from '@/src/components/Cards/CardModel';
+import { Input } from '@/src/components/Forms/Input';
 import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 import { Modal } from '@/src/components/Modals/Modal';
 import { ICard } from '@/src/shared/interfaces/ICard';
+
 import { useCollectionView } from './useCollectionView';
 
 export function CollectionView() {
@@ -36,6 +41,10 @@ export function CollectionView() {
     handleDeleteCard,
     handleGoBack,
     isLoading,
+    controlCard,
+    setFocusCard,
+    refRBSheet,
+    onSubmitCard,
   } = useCollectionView();
 
   const renderCardItem = useCallback(
@@ -99,8 +108,55 @@ export function CollectionView() {
           <AboutTitle>Sobre</AboutTitle>
           <AboutText>{selectedCollection?.description}</AboutText>
 
-          {selectedCollection?.isPublic ? null : <AddCardButton />}
+          {selectedCollection?.isPublic ? null : (
+            <AddCardButton onButtonPress={() => refRBSheet.current?.open()} />
+          )}
         </AboutContainer>
+
+        <BottomSheetContainer ref={refRBSheet}>
+          <BottomSheetTitleContainer>
+            <Feather size={40} name="x" style={{ opacity: 0 }} />
+            <BottomSheetTitle>
+              {/* {cardIndex !== null ? 'Atualizar Cartão' : 'Adicionar Cartão'} */}
+              Adiconar Cartão
+            </BottomSheetTitle>
+            <Feather
+              size={40}
+              color={theme.colors.tertiary}
+              name="x"
+              onPress={() => refRBSheet?.current?.close()}
+            />
+          </BottomSheetTitleContainer>
+          <Input
+            control={controlCard}
+            name="front"
+            placeholder="Frente"
+            required
+            maxLength={200}
+            onSubmitEditing={() => setFocusCard('back')}
+            returnKeyType="next"
+          />
+
+          <Input
+            control={controlCard}
+            name="back"
+            numberOfLines={10}
+            multiline
+            placeholder="Verso"
+            required
+            maxLength={1000}
+          />
+
+          <Button
+            marginTop={24}
+            onPress={onSubmitCard}
+            width="100%"
+            bgColor={theme.colors.tertiary}
+          >
+            {/* {cardIndex !== null ? 'Atualizar' : 'Adicionar'} */}
+            Adicionar
+          </Button>
+        </BottomSheetContainer>
       </View>
     );
   }, [
@@ -114,6 +170,10 @@ export function CollectionView() {
     isModalVisible.deleteCard,
     isModalVisible.deleteCollection,
     handleGoBack,
+    controlCard,
+    setFocusCard,
+    onSubmitCard,
+    refRBSheet,
   ]);
 
   if (isLoading || !selectedCollection) {

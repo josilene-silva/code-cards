@@ -1,10 +1,13 @@
 // src/redux/slices/collectionSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ICard } from '../../interfaces/ICard';
-import { ICollection } from '../../interfaces/ICollection';
+import { CollectionWithUserPractices, ICollection } from '../../interfaces/ICollection';
 
 interface CollectionState {
   collections: ICollection[];
+
+  collectionsWithUserPractices: CollectionWithUserPractices[]; // NOVO ESTADO: Coleções combinadas com dados de prática
+  selectedCollectionWithPractices: CollectionWithUserPractices | null;
 
   selectedCollection: ICollection | null;
   loadingCollections: boolean;
@@ -17,6 +20,10 @@ interface CollectionState {
 
 const initialState: CollectionState = {
   collections: [],
+
+  collectionsWithUserPractices: [], // Inicialização do novo estado
+  selectedCollectionWithPractices: null,
+
   loadingCollections: false,
   errorCollections: null,
 
@@ -62,6 +69,23 @@ const collectionSlice = createSlice({
       state.cardsInSelectedCollection = []; // Limpa cards ao mudar a coleção
       state.loadingCards = false;
       state.errorCards = null;
+    },
+
+    // NOVO REDUCER: Para definir as coleções combinadas
+    setCollectionsWithUserPractices: (
+      state,
+      action: PayloadAction<CollectionWithUserPractices[]>,
+    ) => {
+      state.collectionsWithUserPractices = action.payload;
+      state.loadingCollections = false; // Ajuste conforme seu thunk de combinação
+      state.errorCollections = null; // Ajuste
+    },
+
+    setSelectedCollectionWithPractices: (
+      state,
+      action: PayloadAction<CollectionWithUserPractices>,
+    ) => {
+      state.selectedCollectionWithPractices = action.payload;
     },
 
     // Cards
@@ -113,6 +137,8 @@ export const {
   addCardOptimistic,
   removeCardOptimistic,
   updateCardOptimistic,
+  setCollectionsWithUserPractices, // Exporte o novo reducer
+  setSelectedCollectionWithPractices,
 } = collectionSlice.actions;
 
 export default collectionSlice.reducer;

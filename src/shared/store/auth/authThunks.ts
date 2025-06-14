@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '..';
 import { firebaseAuthService } from '../../api/firebase/authService';
+import { practiceService } from '../../api/firebase/practiceService';
 import { userService } from '../../api/firebase/userService';
 import { NewPractice } from '../../interfaces/IPractice';
 import {
@@ -106,7 +107,7 @@ export const createPractice = createAsyncThunk(
         throw new Error('Usuário não autenticado. Não é possível criar uma prática.');
       }
 
-      const createdPractice = await userService.createPractice(userId, newPracticeData);
+      const createdPractice = await practiceService.createPractice(userId, newPracticeData);
       console.log('Prática criada com sucesso:', createdPractice);
 
       dispatch(addPracticeOptimistic(createdPractice)); // Adiciona a prática otimisticamente

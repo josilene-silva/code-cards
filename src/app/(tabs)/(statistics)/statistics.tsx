@@ -1,6 +1,6 @@
-import { Statistics } from '@/src/screens/Statistics';
+import { StatisticList } from '@/src/screens/StatisticList';
 import React from 'react';
 
 export default function Page() {
-  return <Statistics />;
+  return <StatisticList />;
 }

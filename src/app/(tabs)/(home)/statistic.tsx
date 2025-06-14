@@ -1,6 +1,6 @@
-import { Statistic } from '@/src/screens/Statistic';
+import { PracticeFinishStatistic } from '@/src/screens/PracticeFinishStatistic';
 import React from 'react';
 
 export default function Page() {
-  return <Statistic />;
+  return <PracticeFinishStatistic />;
 }

@@ -19,7 +19,9 @@ interface ICardModelProps extends PressableProps {
   title: string;
   subTitle: string;
   type: CardType;
-  amount?: number;
+
+  lastDate?: string;
+
   editing?: boolean;
   actions?: {
     onDelete?: () => void;
@@ -31,15 +33,12 @@ export function CardModel({
   title,
   subTitle,
   type,
-  amount,
+  lastDate,
+
   editing,
   actions,
   ...props
 }: Readonly<ICardModelProps>) {
-  const getLabel = () => {
-    return amount === 1 ? `${amount} cartão` : `${amount} cartões`;
-  };
-
   return (
     <ShadowContainer>
       <Container {...props}>
@@ -48,8 +47,8 @@ export function CardModel({
           <CardSubTitle numberOfLines={1}>{subTitle}</CardSubTitle>
         ) : (
           <>
-            <CardSubTitle>{getLabel()}</CardSubTitle>
-            <CardSubTitleLight>Última revisão: 5 de maio de 2025</CardSubTitleLight>
+            <CardSubTitle>{subTitle}</CardSubTitle>
+            <CardSubTitleLight>{lastDate}</CardSubTitleLight>
           </>
         )}
 

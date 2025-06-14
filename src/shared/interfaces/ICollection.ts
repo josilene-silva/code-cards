@@ -1,3 +1,5 @@
+import { IPractice } from './IPractice';
+
 export interface ICollection {
   id: string;
   name: string;
@@ -9,6 +11,14 @@ export interface ICollection {
 
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Novo tipo para exibir na listagem
+export interface CollectionWithUserPractices extends ICollection {
+  userPractices: IPractice[]; // Lista de práticas que o usuário realizou para esta coleção
+  totalPracticeSessions: number; // Quantidade de sessões de prática para esta coleção
+  totalCardsPracticed: number; // Soma de cardsAmount de todas as práticas
+  lastPracticeTime?: string; // Data da última prática
 }
 
 // Tipo para dados de um novo item
