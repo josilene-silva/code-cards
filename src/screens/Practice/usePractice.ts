@@ -1,71 +1,95 @@
-import { ICard } from '@/src/shared/interfaces/ICard';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { FlatList } from 'react-native';
 import { interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 
-export interface CardsProps extends ICard {
-  side: number;
-}
-
-export enum CardsDifficultyLevel {
-  EASY = 0,
-  MEDIUM = 1,
-  HARD = 2,
-}
+import { CardsDifficultyLevel, ICard } from '@/src/shared/interfaces/ICard';
+import { ICollection } from '@/src/shared/interfaces/ICollection';
+import { NewPractice } from '@/src/shared/interfaces/IPractice';
+import { createPractice, selectCurrentLoadingPractice } from '@/src/shared/store/auth';
+import { useAppDispatch, useAppSelector } from '../../shared/hooks';
+import { selectCollectionState, selectSomeIsLoadingState } from '../../shared/store/collection';
 
 export enum CardSide {
   FRONT = 0,
   BACK = 1,
 }
 
+export interface CardsProps extends ICard {
+  side: CardSide;
+}
+
 export const usePractice = () => {
-  const id = 'id';
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const dispatch = useAppDispatch();
+  const isLoadingPractice = useAppSelector(selectCurrentLoadingPractice);
 
-  const flipPositionAnimate = useSharedValue(0);
+  const { selectedCollection, cardsInSelectedCollection, collections } =
+    useAppSelector(selectCollectionState);
+  const isLoading = useAppSelector(selectSomeIsLoadingState);
 
-  const [currentCard, setCurrentCard] = useState(0);
-  const [startTime, setStartTime] = useState<Date>();
-
-  const [loadingRequest, setLoadingRequest] = useState(false);
   const cardListRef = useRef<FlatList>(null);
 
-  const [cards, setCards] = useState<CardsProps[]>([
-    {
-      id: '1',
-      front: 'Front 1',
-      back: 'Back 1',
-      side: CardSide.FRONT,
-      difficultyLevel: CardsDifficultyLevel.EASY,
-    },
-    {
-      id: '2',
-      front: 'Front 2',
-      back: 'Back 2',
-      side: CardSide.FRONT,
-      difficultyLevel: CardsDifficultyLevel.MEDIUM,
-    },
-    {
-      id: '3',
-      front: 'Front 3',
+  // animate card flip
+  const flipPositionAnimate = useSharedValue(0);
 
-      back: 'Back 3',
-      side: CardSide.FRONT,
-      difficultyLevel: CardsDifficultyLevel.HARD,
-    },
-  ] as CardsProps[]);
+  const [startTime, setStartTime] = useState<Date>();
 
-  async function loadCardsSet() {
-    setLoadingRequest(true);
-    // api endpoint to get the set id from the route params
-    setLoadingRequest(false);
-  }
+  const [currentCard, setCurrentCard] = useState(0);
+
+  // cards with side
+  const [cardsWithSide, setCardsWithSide] = useState<CardsProps[]>([]);
+
+  const loadCollectionCards = useCallback(async () => {
+    try {
+      // garante que a coleção selecionada existe
+      if (!selectedCollection || selectedCollection.id) {
+        const foundCollection = collections.find(
+          (col: ICollection) => col.id === params.collectionId,
+        );
+
+        if (!foundCollection) {
+          Toast.show({
+            type: 'error',
+            text1: 'Coleção não encontrada',
+            text2: 'A coleção que você está tentando acessar não existe.',
+          });
+          router.back();
+        }
+
+        if (cardsInSelectedCollection.length <= 0) {
+          Toast.show({
+            type: 'error',
+            text1: 'Nenhum cartão encontrado',
+            text2: 'A coleção que você está tentando acessar não contém cartões.',
+          });
+          router.back();
+        }
+
+        const cardsFormatted: CardsProps[] = cardsInSelectedCollection.map((card) => ({
+          ...card,
+          side: CardSide.FRONT,
+        }));
+        setCardsWithSide(cardsFormatted);
+      }
+    } catch (error) {
+      console.error('Error loading collection cards:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro ao carregar os cartões da coleção',
+        text2: 'Por favor, tente novamente mais tarde.',
+      });
+      router.back();
+    }
+  }, [selectedCollection, collections, params.collectionId, cardsInSelectedCollection, router]);
 
   useFocusEffect(
     useCallback(() => {
-      loadCardsSet();
+      loadCollectionCards();
       setStartTime(new Date());
-    }, []),
+    }, [loadCollectionCards]),
   );
 
   const frontCardAnimated = useAnimatedStyle(() => {
@@ -87,28 +111,28 @@ export const usePractice = () => {
 
   const changeCardSide = useCallback(
     (item: CardsProps) => {
-      const cardsUpdate = cards.map((card) => {
+      const cardsUpdate = cardsWithSide.map((card) => {
         if (card.id === item.id) {
-          card.side = 1;
+          card.side = CardSide.BACK;
         }
         return card;
       });
-      setCards(cardsUpdate);
+      setCardsWithSide(cardsUpdate);
     },
-    [cards],
+    [cardsWithSide],
   );
 
   const changeCardDifficultyLevel = useCallback(
-    (item: CardsProps, difficultyLevel: number) => {
-      const cardsUpdate = cards.map((card) => {
+    (item: CardsProps, difficultyLevel: CardsDifficultyLevel) => {
+      const cardsUpdate = cardsWithSide.map((card) => {
         if (card.id === item.id) {
           card.difficultyLevel = difficultyLevel;
         }
         return card;
       });
-      setCards(cardsUpdate);
+      setCardsWithSide(cardsUpdate);
     },
-    [cards],
+    [cardsWithSide],
   );
 
   const handleSeeBack = useCallback(
@@ -128,50 +152,42 @@ export const usePractice = () => {
   }, [currentCard]);
 
   const haveCards = useCallback(() => {
-    const totalCards = cards.length - 1;
+    const totalCards = cardsWithSide.length - 1;
     return currentCard < totalCards;
-  }, [cards.length, currentCard]);
+  }, [cardsWithSide.length, currentCard]);
 
-  function formatPracticePayload() {
+  const finishPractice = useCallback(async () => {
     const amount = {
-      amountEasy: 0,
-      amountMedium: 0,
-      amountHard: 0,
+      easy: 0,
+      medium: 0,
+      hard: 0,
     };
 
-    cards.map((card) => {
-      if (card.difficultyLevel === CardsDifficultyLevel.EASY) amount.amountEasy += 1;
-      if (card.difficultyLevel === CardsDifficultyLevel.MEDIUM) amount.amountMedium += 1;
-      if (card.difficultyLevel === CardsDifficultyLevel.HARD) amount.amountHard += 1;
-    });
+    for (const card of cardsWithSide) {
+      if (card.difficultyLevel === CardsDifficultyLevel.EASY) amount.easy += 1;
+      if (card.difficultyLevel === CardsDifficultyLevel.MEDIUM) amount.medium += 1;
+      if (card.difficultyLevel === CardsDifficultyLevel.HARD) amount.hard += 1;
+    }
 
-    return {
-      setId: id,
-      startTime,
-      endTime: new Date(),
-      amountEasy: amount.amountEasy,
-      amountMedium: amount.amountMedium,
-      amountHard: amount.amountHard,
+    const payload: NewPractice = {
+      collectionId: selectedCollection?.id as string,
+      collectionName: selectedCollection?.name as string,
+      startTime: startTime!.toISOString(),
+      endTime: new Date().toISOString(),
+      cardsAmount: cardsWithSide.length,
+      cardsAmountEasy: amount.easy,
+      cardsAmountMedium: amount.medium,
+      cardsAmountHard: amount.hard,
     };
-  }
 
-  const finishPractice = useCallback(() => {
-    // If you need to use payloadCards, do something with it here, otherwise remove it
-    // const payloadCards = cards.map((card) => ({
-    //   id: card.id,
-    //   difficultyLevel: card.difficultyLevel,
-    //   setId: id,
-    // }));
+    await dispatch(createPractice(payload)).unwrap();
+    // Aqui você deve chamar a função para salvar o resultado da prática
 
-    router.replace('/(tabs)/(home)/practice-finish', {
-      // id: response.data.id,
-      // name: set.name,
-    });
-    setLoadingRequest(false);
-  }, []);
+    router.replace('/(tabs)/(home)/practice-finish');
+  }, [router, cardsWithSide, selectedCollection, startTime, dispatch]);
 
   const handleSelectDifficultyLevel = useCallback(
-    async (card: CardsProps, difficultyLevel: number) => {
+    async (card: CardsProps, difficultyLevel: CardsDifficultyLevel) => {
       changeCardDifficultyLevel(card, difficultyLevel);
       if (haveCards()) {
         changeCardAnimationSide();
@@ -183,12 +199,16 @@ export const usePractice = () => {
     [changeCardDifficultyLevel, haveCards, changeCardAnimationSide, handleFlipCard, finishPractice],
   );
   return {
-    cards,
+    cardsWithSide,
     cardListRef,
     frontCardAnimated,
     backCardAnimated,
     handleSeeBack,
     handleSelectDifficultyLevel,
     currentCard,
+    isLoading,
+    selectedCollection,
+    cardsInSelectedCollection,
+    isLoadingPractice,
   };
 };

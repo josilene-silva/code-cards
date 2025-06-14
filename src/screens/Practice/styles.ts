@@ -38,7 +38,6 @@ export const Card = styled(Animated.View)<CardProps>`
   align-items: center;
   justify-content: center;
   min-height: ${Dimensions.get('screen').height * 0.6}px;
-  display: ${({ visible }: any) => (visible ? 'flex' : 'none')};
 `;
 
 type ContainerProps = {

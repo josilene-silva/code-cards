@@ -5,6 +5,7 @@ import Dots from '@/assets/images/dots.svg';
 import { Button } from '@/src/components/Buttons';
 import { Header } from '@/src/components/Header';
 import { LoadingOverlay } from '@/src/components/LoadingOverlay';
+import { CardsDifficultyLevel } from '@/src/shared/interfaces/ICard';
 import theme from '@/src/shared/theme';
 import { router } from 'expo-router';
 import {
@@ -16,31 +17,36 @@ import {
   Progress,
   ProgressBar,
 } from './styles';
-import { CardsDifficultyLevel, CardSide, CardsProps, usePractice } from './usePractice';
+import { CardSide, CardsProps, usePractice } from './usePractice';
 
 export function Practice() {
   const {
-    cards,
+    cardsWithSide,
     cardListRef,
     frontCardAnimated,
     backCardAnimated,
     handleSeeBack,
     handleSelectDifficultyLevel,
     currentCard,
+    isLoading,
+    selectedCollection,
+    isLoadingPractice,
   } = usePractice();
 
   const renderCollectionItem = useCallback(
     ({ item }: { item: CardsProps }) => (
       <View>
-        <Card visible={item.side === CardSide.FRONT} type="front" style={frontCardAnimated}>
-          <Dots width={40} height={40} style={{ position: 'absolute', top: 0, left: 10 }} />
-          <FrontText>{item.front}</FrontText>
-        </Card>
-
-        <Card visible={item.side === CardSide.BACK} type="back" style={backCardAnimated}>
-          <Dots width={40} height={40} style={{ position: 'absolute', top: 0, left: 10 }} />
-          <BackText>{item.back}</BackText>
-        </Card>
+        {item.side === CardSide.FRONT ? (
+          <Card type="front" style={frontCardAnimated}>
+            <Dots width={40} height={40} style={{ position: 'absolute', top: 0, left: 10 }} />
+            <FrontText>{item.front}</FrontText>
+          </Card>
+        ) : (
+          <Card type="back" style={backCardAnimated}>
+            <Dots width={40} height={40} style={{ position: 'absolute', top: 0, left: 10 }} />
+            <BackText>{item.back}</BackText>
+          </Card>
+        )}
 
         <ButtonContainer style={{ alignSelf: 'center' }} visible={item.side === CardSide.FRONT}>
           <Button
@@ -55,21 +61,21 @@ export function Practice() {
 
         <ButtonContainer visible={item.side === CardSide.BACK}>
           <Button
-            bgColor="#2A9D8F"
+            bgColor={theme.colors.easy}
             withShadow={false}
             onPress={() => handleSelectDifficultyLevel(item, CardsDifficultyLevel.EASY)}
           >
             Fácil
           </Button>
           <Button
-            bgColor="#E0A26E"
+            bgColor={theme.colors.medium}
             withShadow={false}
             onPress={() => handleSelectDifficultyLevel(item, CardsDifficultyLevel.MEDIUM)}
           >
             Mediana
           </Button>
           <Button
-            bgColor="#F23333"
+            bgColor={theme.colors.hard}
             withShadow={false}
             onPress={() => handleSelectDifficultyLevel(item, CardsDifficultyLevel.HARD)}
           >
@@ -81,19 +87,21 @@ export function Practice() {
     [frontCardAnimated, backCardAnimated, handleSeeBack, handleSelectDifficultyLevel],
   );
 
+  if (isLoading || isLoadingPractice) {
+    return <LoadingOverlay isVisible={true} />;
+  }
+
   return (
     <Container>
-      <LoadingOverlay isVisible={false} />
-
-      <Header title="Estudo de estruturas de repetição" onBackPress={() => router.back()} />
+      <Header title={selectedCollection?.name ?? ''} onBackPress={() => router.back()} />
 
       <ProgressBar>
-        <Progress percentage={(currentCard * 100) / cards.length} />
+        <Progress percentage={(currentCard * 100) / cardsWithSide.length} />
       </ProgressBar>
 
       <FlatList
         ref={cardListRef}
-        data={cards}
+        data={cardsWithSide}
         horizontal
         scrollEnabled={false}
         showsHorizontalScrollIndicator={false}

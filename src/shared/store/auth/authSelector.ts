@@ -13,26 +13,17 @@ export const selectIsAuthenticated = createSelector(
 
 export const selectCurrentUser = createSelector(selectAuthState, (authState) => authState.user);
 
-export const selectAuthLoading = createSelector(
-  selectAuthState,
-  (authState) => authState.isLoading,
-);
-
-export const selectAuthError = createSelector(selectAuthState, (authState) => authState.error);
-
 export const selectCurrentUsername = createSelector(
   selectCurrentUser,
-  (user) => user?.displayName?.split(' ')[0] || 'Convidado',
+  (user) => user?.name?.split(' ')[0] ?? 'Convidado',
 );
 
-// 4. Exemplo de seletor mais complexo/combinado
-export const selectAuthStatus = createSelector(
-  selectIsAuthenticated,
-  selectAuthLoading,
-  selectAuthError,
-  (isAuthenticated, isLoading, error) => ({
-    isAuthenticated,
-    isLoading,
-    error,
-  }),
+export const selectCurrentSelectedPractice = createSelector(
+  selectAuthState,
+  (authState) => authState.selectedPractice,
+);
+
+export const selectCurrentLoadingPractice = createSelector(
+  selectAuthState,
+  (authState) => authState.loadingPractices,
 );

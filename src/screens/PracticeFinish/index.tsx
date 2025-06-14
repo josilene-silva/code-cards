@@ -4,14 +4,13 @@ import { ButtonContainer, Container, GoBackButton, ReviewSubTitle, ReviewTitle }
 
 import Celebration from '@/assets/images/celebration.svg';
 import { Button } from '@/src/components/Buttons';
+import { setSelectedPractice } from '@/src/shared/store/auth';
 import theme from '@/src/shared/theme';
 import { router } from 'expo-router';
+import { useDispatch } from 'react-redux';
 
 export function PracticeFinish() {
-  // const id = router.params?.id;
-  // const name = route.params?.name;
-  const id = 'sasa';
-  const name = 'asasa';
+  const dispatch = useDispatch();
 
   return (
     <Container>
@@ -25,7 +24,6 @@ export function PracticeFinish() {
           bgColor={theme.colors.tertiary}
           onPress={() => {
             router.navigate('/(tabs)/(home)/statistic');
-            // navigation.dispatch(StackActions.replace('SingleStatistic', { name, id }));
           }}
         >
           Ver meus resultados
@@ -36,6 +34,7 @@ export function PracticeFinish() {
           textColor={theme.colors.tertiary}
           onPress={() => {
             router.back();
+            dispatch(setSelectedPractice(null));
           }}
         >
           Finalizar

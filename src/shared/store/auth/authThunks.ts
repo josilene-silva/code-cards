@@ -1,7 +1,18 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { RootState } from '..';
 import { firebaseAuthService } from '../../api/firebase/authService';
 import { userService } from '../../api/firebase/userService';
-import { clearAuth, setAuthError, setAuthLoading, setAuthenticatedUser } from './authSlice';
+import { NewPractice } from '../../interfaces/IPractice';
+import {
+  addPracticeOptimistic,
+  clearAuth,
+  setAuthError,
+  setAuthLoading,
+  setAuthenticatedUser,
+  setLoadingPractices,
+  setPracticeError,
+  setSelectedPractice,
+} from './authSlice';
 
 export const signInWithGoogle = createAsyncThunk(
   'auth/signInWithGoogle',
@@ -78,5 +89,33 @@ export const checkAuthStatus = createAsyncThunk<null>(
         }
       });
     });
+  },
+);
+
+// --- Thunks para Pratice (dentro de um user) ---
+
+export const createPractice = createAsyncThunk(
+  'auth/createPractice',
+  async (newPracticeData: NewPractice, { dispatch, rejectWithValue, getState }) => {
+    try {
+      dispatch(setLoadingPractices(true));
+
+      const userId = (getState() as RootState).auth.user?.id;
+
+      if (!userId) {
+        throw new Error('Usuário não autenticado. Não é possível criar uma prática.');
+      }
+
+      const createdPractice = await userService.createPractice(userId, newPracticeData);
+      console.log('Prática criada com sucesso:', createdPractice);
+
+      dispatch(addPracticeOptimistic(createdPractice)); // Adiciona a prática otimisticamente
+      dispatch(setSelectedPractice(createdPractice)); // Define a prática selecionada
+
+      return createdPractice;
+    } catch (error: any) {
+      dispatch(setPracticeError(error.message ?? 'Failed to create practice.'));
+      return rejectWithValue(error.message);
+    }
   },
 );

@@ -50,7 +50,7 @@ export const TabBarButton: React.FC<TabBarButtonProps> = ({
       onPress={onPress}
       onLongPress={onLongPress}
     >
-      {TabIcon && TabIcon({ color: theme.colors.primary, focused: isFocused, size: 24 })}
+      {TabIcon?.({ color: theme.colors.primary, focused: isFocused, size: 24 })}
       <ButtonText isFocused={isFocused}>{label}</ButtonText>
     </Button>
   );

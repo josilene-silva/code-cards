@@ -57,14 +57,14 @@ const collectionSlice = createSlice({
         state.collections[index] = action.payload;
       }
     },
-
-    // Cards
     setSelectedCollection: (state, action: PayloadAction<ICollection | null>) => {
       state.selectedCollection = action.payload;
       state.cardsInSelectedCollection = []; // Limpa cards ao mudar a coleção
       state.loadingCards = false;
       state.errorCards = null;
     },
+
+    // Cards
     setCardsLoading: (state, action: PayloadAction<boolean>) => {
       state.loadingCards = action.payload;
       state.errorCards = null;

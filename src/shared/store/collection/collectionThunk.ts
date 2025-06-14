@@ -63,10 +63,51 @@ export const createCollection = createAsyncThunk(
   },
 );
 
-export const subscribeToCollectionsByCategory = createAsyncThunk<
-  () => void,
-  { categoryId: string }
->(
+// --- NOVO THUNK: Buscar Coleções de um Usuário (logado) ---
+
+export const fetchUserSpecificCollections = createAsyncThunk(
+  'collections/fetchUserSpecificCollections',
+  async (_, { dispatch, rejectWithValue, getState }) => {
+    dispatch(setCollections([])); // Limpa as coleções antes de buscar
+    dispatch(setCollectionsLoading(true)); // Inicia o estado de carregamento
+
+    try {
+      const userId = (getState() as RootState).auth.user?.id; // Obtém o UID do usuário logado
+      if (!userId) {
+        throw new Error('User not authenticated.');
+      }
+
+      // 1. Obter as ligações UserCollection para este usuário
+      const userCollectionsLinks = await userCollectionService.getUserCollectionsByUserId(userId);
+
+      if (userCollectionsLinks.length === 0) {
+        dispatch(setCollections([])); // Nenhuma coleção encontrada
+        return [];
+      }
+
+      const collectionIds = userCollectionsLinks.map((link) => link.collectionId);
+
+      // 2. Buscar os detalhes das Coleções usando os IDs
+      const fetchedCollections: ICollection[] = [];
+      const BATCH_SIZE = 10; // Limitação do Firestore para 'in' queries
+
+      for (let i = 0; i < collectionIds.length; i += BATCH_SIZE) {
+        const batchIds = collectionIds.slice(i, i + BATCH_SIZE);
+        // collectionFirestoreService precisa de um método para buscar por lista de IDs
+        const collectionsBatch = await collectionService.getCollectionsByIds(batchIds);
+        fetchedCollections.push(...collectionsBatch);
+      }
+
+      dispatch(setCollections(fetchedCollections)); // Atualiza o estado com as coleções do usuário
+      return fetchedCollections;
+    } catch (error: any) {
+      dispatch(setCollectionsError(error.message || 'Failed to fetch user-specific collections.'));
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
+export const subscribeToCollectionsByCategory = createAsyncThunk(
   'collections/subscribeToCollectionsByCategory',
   async ({ categoryId }: { categoryId: string }, { dispatch, rejectWithValue }) => {
     dispatch(setCollections([])); // Limpa as coleções antes de iniciar a assinatura
@@ -235,118 +276,6 @@ export const deleteCard = createAsyncThunk(
       return cardId;
     } catch (error: any) {
       dispatch(setCardsError(error.message ?? 'Failed to delete card.'));
-      return rejectWithValue(error.message);
-    }
-  },
-);
-
-// --- Thunks para UserCollections
-
-export const addUserCollection = createAsyncThunk(
-  'userCollections/addUserCollection',
-  async (collectionId: string, { dispatch, rejectWithValue, getState }) => {
-    try {
-      const userId = (getState() as RootState).auth.user?.id; // Adapte para onde seu UID está
-      if (!userId) {
-        throw new Error('User not authenticated.');
-      }
-      const newUserCollectionData: NewUserCollection = {
-        userId: userId,
-        collectionId: collectionId,
-      };
-      const createdLink = await userCollectionService.createUserCollection(newUserCollectionData);
-      // Opcional: dispatch uma action para adicionar a ligação ao estado Redux,
-      // ou apenas confie no listener se você tiver um.
-      return createdLink;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to add user collection.');
-    }
-  },
-);
-
-export const removeUserCollection = createAsyncThunk(
-  'userCollections/removeUserCollection',
-  async (collectionId: string, { dispatch, rejectWithValue, getState }) => {
-    try {
-      const userId = (getState() as RootState).auth.user?.uid; // Adapte para onde seu UID está
-      if (!userId) {
-        throw new Error('User not authenticated.');
-      }
-      // Use o método que remove pelo link (user_id e collection_id)
-      await userCollectionService.deleteUserCollectionByLink(userId, collectionId);
-      // Opcional: dispatch uma action para remover a ligação do estado Redux
-      return collectionId; // Retorna o ID da coleção removida
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to remove user collection.');
-    }
-  },
-);
-
-// E um thunk para ouvir as coleções do usuário, se necessário
-export const subscribeToUserCollections = createAsyncThunk<() => void, void>(
-  'userCollections/subscribeToUserCollections',
-  async (_, { dispatch, rejectWithValue, getState }) => {
-    const userId = (getState() as RootState).auth.user?.uid;
-    if (!userId) {
-      return rejectWithValue('User not authenticated.');
-    }
-
-    // dispatch(setUserCollectionsLoading(true)); // Se você tiver um loading state
-    return new Promise<() => void>((resolve, reject) => {
-      const unsubscribe = userCollectionService.listenToUserCollections(
-        userId,
-        (userCollections) => {
-          // dispatch(setUserCollections(userCollections)); // Dispatch para seu slice
-          resolve(unsubscribe);
-        },
-        (error) => {
-          // dispatch(setUserCollectionsError(error.message)); // Dispatch de erro
-          reject(rejectWithValue(error.message));
-        },
-      );
-    });
-  },
-);
-
-// --- NOVO THUNK: Buscar Coleções de um Usuário ---
-
-export const fetchUserSpecificCollections = createAsyncThunk(
-  'collections/fetchUserSpecificCollections',
-  async (_, { dispatch, rejectWithValue, getState }) => {
-    dispatch(setCollections([])); // Limpa as coleções antes de buscar
-    dispatch(setCollectionsLoading(true)); // Inicia o estado de carregamento
-
-    try {
-      const userId = (getState() as RootState).auth.user?.id; // Obtém o UID do usuário logado
-      if (!userId) {
-        throw new Error('User not authenticated.');
-      }
-
-      // 1. Obter as ligações UserCollection para este usuário
-      const userCollectionsLinks = await userCollectionService.getUserCollectionsByUserId(userId);
-
-      if (userCollectionsLinks.length === 0) {
-        dispatch(setCollections([])); // Nenhuma coleção encontrada
-        return [];
-      }
-
-      const collectionIds = userCollectionsLinks.map((link) => link.collectionId);
-
-      // 2. Buscar os detalhes das Coleções usando os IDs
-      const fetchedCollections: ICollection[] = [];
-      const BATCH_SIZE = 10; // Limitação do Firestore para 'in' queries
-
-      for (let i = 0; i < collectionIds.length; i += BATCH_SIZE) {
-        const batchIds = collectionIds.slice(i, i + BATCH_SIZE);
-        // collectionFirestoreService precisa de um método para buscar por lista de IDs
-        const collectionsBatch = await collectionService.getCollectionsByIds(batchIds);
-        fetchedCollections.push(...collectionsBatch);
-      }
-
-      dispatch(setCollections(fetchedCollections)); // Atualiza o estado com as coleções do usuário
-      return fetchedCollections;
-    } catch (error: any) {
-      dispatch(setCollectionsError(error.message || 'Failed to fetch user-specific collections.'));
       return rejectWithValue(error.message);
     }
   },

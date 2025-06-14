@@ -1,15 +1,16 @@
 import { addDoc } from '@react-native-firebase/firestore';
 import { db, FieldValue } from '../../config/firebase/firebaseConfig';
 
+import { IPractice, NewPractice } from '../../interfaces/IPractice';
 import { IUser, NewUser, UpdateUser } from '../../interfaces/IUser';
 
 const USERS_COLLECTION = 'users';
-const collectionRef = db.collection(USERS_COLLECTION);
+const userRef = db.collection(USERS_COLLECTION);
 
 export const userService = {
   async createUser(userData: NewUser): Promise<any> {
     try {
-      const docRef = await addDoc(collectionRef, {
+      const docRef = await addDoc(userRef, {
         ...userData,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
@@ -32,7 +33,7 @@ export const userService = {
   async updateUser(itemData: UpdateUser): Promise<void> {
     try {
       const { id, ...dataToUpdate } = itemData;
-      await collectionRef.doc(id).update({
+      await userRef.doc(id).update({
         ...dataToUpdate,
         updatedAt: FieldValue.serverTimestamp(),
       });
@@ -43,7 +44,7 @@ export const userService = {
   },
   async getUserByEmail(email: string): Promise<IUser | null> {
     try {
-      const querySnapshot = await collectionRef.where('email', '==', email).get();
+      const querySnapshot = await userRef.where('email', '==', email).get();
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
         return {
@@ -54,6 +55,43 @@ export const userService = {
       return null;
     } catch (error) {
       console.error('Error fetching user by email:', error);
+      throw error;
+    }
+  },
+
+  async createPractice(userId: string, practiceData: NewPractice): Promise<IPractice> {
+    try {
+      const practiceRef = userRef.doc(userId).collection('practices');
+
+      const docRef = await addDoc(practiceRef, {
+        ...practiceData,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+
+      const docSnapshot = await docRef.get();
+      const docData = docSnapshot.data();
+
+      return {
+        id: docSnapshot.id,
+        collectionId: docData?.collectionId,
+        collectionName: docData?.collectionName ?? '',
+
+        userId: userId, // Adiciona o ID do usuário ao objeto da prática
+
+        cardsAmount: practiceData.cardsAmount,
+        cardsAmountEasy: practiceData.cardsAmountEasy,
+        cardsAmountMedium: practiceData.cardsAmountMedium,
+        cardsAmountHard: practiceData.cardsAmountHard,
+
+        startTime: docData?.startTime ?? '',
+        endTime: docData?.endTime ?? '',
+
+        createdAt: docData?.createdAt?.toDate().toISOString(),
+        updatedAt: docData?.updatedAt?.toDate().toISOString(),
+      } as IPractice;
+    } catch (error) {
+      console.error('Error creating Practice:', error);
       throw error;
     }
   },
