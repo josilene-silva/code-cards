@@ -1,10 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { firebaseAuthService } from '../../api/firebase/authService';
 import { userService } from '../../api/firebase/userService';
-import { IUser } from '../../interfaces/IUser';
-import { addUserOptimistic, removeUserOptimistic } from '../user/userSlice';
 import { clearAuth, setAuthError, setAuthLoading, setAuthenticatedUser } from './authSlice';
-import { UserProfile } from './interfaces';
 
 export const signInWithGoogle = createAsyncThunk(
   'auth/signInWithGoogle',
@@ -24,27 +21,14 @@ export const signInWithGoogle = createAsyncThunk(
             name: firebaseUser?.displayName ?? '',
             email: firebaseUser?.email ?? '',
           };
-          const tempId = `temp-${Date.now()}`;
-
-          const userWithTempId: IUser = {
-            id: tempId,
-            ...newUserData,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-
-          dispatch(addUserOptimistic(userWithTempId)); // Atualização otimista da UI
-
           // Se o usuário não existir, crie um novo usuário no Firestore
           const newUser = await userService.createUser(newUserData);
-
-          dispatch(removeUserOptimistic(userWithTempId.id));
-          dispatch(addUserOptimistic(newUser));
+          dispatch(setAuthenticatedUser(newUser));
         } else {
           console.log('Usuário já existe:', userExists);
+          dispatch(setAuthenticatedUser(userExists));
         }
 
-        dispatch(setAuthenticatedUser(firebaseUser));
         return firebaseUser;
       } else {
         throw new Error('Usuário não autenticado.');
@@ -75,23 +59,19 @@ export const signOutUser = createAsyncThunk(
   },
 );
 
-export const checkAuthStatus = createAsyncThunk<UserProfile | null>(
+export const checkAuthStatus = createAsyncThunk<null>(
   'auth/checkAuthStatus',
   async (_, { dispatch }) => {
     dispatch(setAuthLoading(true));
 
-    return await new Promise<UserProfile | null>((resolve) => {
+    return await new Promise<null>((resolve) => {
       const unsubscribe = firebaseAuthService.onAuthStateChanged((firebaseUser) => {
         unsubscribe();
         if (firebaseUser) {
-          const userProfile: UserProfile = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
-          };
-          dispatch(setAuthenticatedUser(userProfile));
-          resolve(userProfile);
+          userService.getUserByEmail(firebaseUser.email!).then((user) => {
+            dispatch(setAuthenticatedUser(user));
+          });
+          resolve(null);
         } else {
           dispatch(clearAuth());
           resolve(null);

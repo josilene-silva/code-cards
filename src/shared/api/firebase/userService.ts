@@ -1,4 +1,6 @@
+import { addDoc } from '@react-native-firebase/firestore';
 import { db, FieldValue } from '../../config/firebase/firebaseConfig';
+
 import { IUser, NewUser, UpdateUser } from '../../interfaces/IUser';
 
 const USERS_COLLECTION = 'users';
@@ -7,7 +9,7 @@ const collectionRef = db.collection(USERS_COLLECTION);
 export const userService = {
   async createUser(userData: NewUser): Promise<any> {
     try {
-      const docRef = await collectionRef.add({
+      const docRef = await addDoc(collectionRef, {
         ...userData,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),

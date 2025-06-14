@@ -6,7 +6,7 @@ export const Container = styled.View`
   background-color: ${({ theme }: any) => theme.colors.themedBackground};
   border-radius: 8px;
   width: 90%;
-  border-left-color: ${({ theme }: any) => theme.colors.tertiary};
+  border-left-color: ${({ theme }: any) => theme.colors.primary};
   margin-top: 5%;
   padding: 10px;
   border-left-width: 5px;

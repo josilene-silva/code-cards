@@ -1,5 +1,3 @@
-import { ICard } from './ICard';
-
 export interface ICollection {
   id: string;
   name: string;
@@ -8,8 +6,6 @@ export interface ICollection {
 
   categoryId?: string;
   categoryName?: string;
-
-  cards?: ICard[];
 
   createdAt?: string;
   updatedAt?: string;

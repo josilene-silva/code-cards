@@ -53,3 +53,73 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+```
+users/{userId}
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "created_at": <timestamp>,
+  "updated_at": <timestamp>
+}
+```
+
+```
+users/{userId}/practices/{practiceId}
+{
+  "collection_id": "uuid-do-collection-A",
+  "collection_name": "Vocabulário Inglês Básico",
+  "cards_amount: 5,
+  "amount_easy": 10,
+  "amount_medium": 5,
+  "amount_hard": 2,
+  "start_time": <timestamp>,
+  "end_time": <timestamp>,
+  "created_at": <timestamp>,
+  "updated_at": <timestamp>
+}
+```
+
+```
+user_collections/{docId} // ID auto-gerado
+{
+  "user_id": "uuid-do-usuario-1",
+  "collection_id": "uuid-do-collection-A",
+  "created_at": <timestamp>,
+  "updated_at": <timestamp>
+}
+```
+
+```
+collections/{collectionId}
+{
+  "name": "Vocabulário Inglês Básico",
+  "description": "500 palavras essenciais",
+  "category_id": 1,      // Opcional, se o ID for significativo
+  "category_name": "Línguas", // Desnormalizado para fácil exibição
+  "is_public": true,
+  "created_at": <timestamp>,
+  "updated_at": <timestamp>
+}
+```
+
+```
+user_collections/{docId} // ID auto-gerado
+{
+  "user_id": "uuid-do-usuario-1",
+  "collection_id": "uuid-do-collection-A",
+  "created_at": <timestamp>,
+  "updated_at": <timestamp>
+}
+```
+
+```
+collections/{collectionId}/cards/{cardId}
+{
+  "difficulty_level": "easy",
+  "front": "Hello",
+  "back": "Olá",
+  "created_at": <timestamp>,
+  "updated_at": <timestamp>
+}
+```

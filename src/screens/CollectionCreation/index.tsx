@@ -9,7 +9,6 @@ import { CardModel, CardType } from '@/src/components/Cards/CardModel';
 import { Modal, ModalProps } from '@/src/components/Modals/Modal';
 import { useAppDispatch } from '@/src/shared/hooks/useAppDispatch';
 import { NewCard } from '@/src/shared/interfaces/ICard';
-import { createCard, createCollection } from '@/src/shared/store/collection/collectionThunk';
 import { SchemaCard, validationCard } from '@/src/shared/utils/form/validations/SchemaCard';
 import {
   SchemaCollection,
@@ -22,6 +21,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { View } from 'react-native';
 import Toast from 'react-native-toast-message'; // Importe o Toast
+import { createCard, createCollection } from '../../shared/store/collection';
 
 import {
   BottomSheetContainer,
@@ -111,32 +111,41 @@ export function CollectionCreation() {
   const onSubmit = handleSubmit(async (data) => {
     console.log('Form Data:', data);
 
-    if (cardsList.length === 0) {
-      changeModalVisibility('attention');
-      return;
+    try {
+      if (cardsList.length === 0) {
+        changeModalVisibility('attention');
+        return;
+      }
+
+      const collectionCreated = await dispatch(createCollection(data)).unwrap();
+      console.log('Collection Created:', collectionCreated);
+
+      const requisitions = [];
+      for (const card of cardsList) {
+        console.log('Collection id:', collectionCreated.id);
+        console.log('Card:', card);
+
+        requisitions.push(
+          dispatch(createCard({ newCardData: card, collectionId: collectionCreated.id })).unwrap(),
+        );
+      }
+
+      await Promise.allSettled(requisitions);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Sua coleção foi criada.',
+      });
+      router.back();
+    } catch (error) {
+      console.error('Error creating collection:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro ao criar coleção',
+        text2: 'Ocorreu um erro ao criar a coleção. Tente novamente.',
+      });
     }
-
-    const collectionCreated = await dispatch(createCollection(data)).unwrap();
-    console.log('Collection Created:', collectionCreated);
-
-    const requisitions = [];
-    for (const card of cardsList) {
-      console.log('Collection id:', collectionCreated.id);
-      console.log('Card:', card);
-
-      requisitions.push(
-        dispatch(createCard({ newCardData: card, collectionId: collectionCreated.id })).unwrap(),
-      );
-    }
-
-    await Promise.allSettled(requisitions);
-
-    Toast.show({
-      type: 'success',
-      text1: 'Sucesso!',
-      text2: 'Sua coleção foi criada.',
-    });
-    router.back();
   });
 
   const onSubmitCard = handleSubmitCard((data) => {

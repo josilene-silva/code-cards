@@ -1,5 +1,14 @@
 // src/api/firebase/itemFirestoreService.ts
 import { db, FieldValue } from '@/src/shared/config/firebase/firebaseConfig';
+import {
+  addDoc,
+  FieldPath,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from '@react-native-firebase/firestore';
 import { ICard, NewCard, UpdateCard } from '../../interfaces/ICard';
 import { ICollection, NewCollection, UpdateCollection } from '../../interfaces/ICollection';
 
@@ -8,7 +17,7 @@ const collectionsRef = db.collection(COLLECTIONS_COLLECTION);
 
 export async function createCollection(collectionData: NewCollection): Promise<ICollection> {
   try {
-    const docRef = await collectionsRef.add({
+    const docRef = await addDoc(collectionsRef, {
       ...collectionData,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
@@ -31,7 +40,7 @@ export async function createCollection(collectionData: NewCollection): Promise<I
   }
 }
 
-export async function getCollection(): Promise<ICollection[]> {
+export async function getCollections(): Promise<ICollection[]> {
   try {
     const snapshot = await collectionsRef.orderBy('createdAt', 'desc').get();
     const collections: ICollection[] = [];
@@ -45,6 +54,7 @@ export async function getCollection(): Promise<ICollection[]> {
         description: data.description,
         categoryId: data.categoryId,
         categoryName: data.categoryName,
+        isPublic: data.isPublic,
         createdAt: data.createdAt?.toDate().toISOString(), // Convert to ISO string
         updatedAt: data.updatedAt?.toDate().toISOString(), // Convert to ISO string
       } as ICollection); // Type assertion para garantir o tipo ICollection
@@ -53,6 +63,49 @@ export async function getCollection(): Promise<ICollection[]> {
     return collections;
   } catch (error) {
     console.error('Error getting items:', error);
+    throw error;
+  }
+}
+
+export async function getCollectionsByIds(ids: string[]): Promise<ICollection[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+  if (ids.length > 10) {
+    console.warn(
+      "Firestore 'in' query limit is 10. Consider splitting calls or using Cloud Functions.",
+    );
+  }
+  try {
+    const q = query(collectionsRef, where(FieldPath.documentId(), 'in', ids));
+    const snapshot = await getDocs(q);
+
+    const collections: ICollection[] = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+
+      collections.push({
+        id: doc.id,
+        name: data.name,
+        description: data.description,
+        categoryId: data?.categoryId,
+        categoryName: data?.categoryName,
+        isPublic: data?.isPublic,
+        createdAt: data.createdAt?.toDate().toISOString(),
+        updatedAt: data.updatedAt?.toDate().toISOString(),
+      } as ICollection);
+    });
+
+    collections.sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      return 0;
+    });
+    return collections;
+  } catch (error) {
+    console.error('Error getting collections by IDs:', error);
     throw error;
   }
 }
@@ -66,8 +119,9 @@ export async function getCollectionById(id: string): Promise<ICollection | null>
         id: doc.id,
         name: data?.name,
         description: data?.description,
-        cards: data?.cards,
-        practices: data?.practices,
+        categoryId: data?.categoryId,
+        categoryName: data?.categoryName,
+        isPublic: data?.isPublic,
         createdAt: data?.createdAt?.toDate().toISOString(),
         updatedAt: data?.updatedAt?.toDate().toISOString(),
       } as ICollection;
@@ -113,13 +167,25 @@ export async function deleteCollection(id: string): Promise<void> {
   }
 }
 
-export function listenToCollections(
+export function listenToCollectionsByCategory(
+  categoryId: string,
   callback: (items: ICollection[]) => void,
   onError: (error: Error) => void,
 ): () => void {
-  const unsubscribe = collectionsRef.orderBy('createdAt', 'desc').onSnapshot(
+  console.log('Listening to collections by category:', categoryId);
+  const q = query(
+    collectionsRef, // Sua referência à coleção
+    where('isPublic', '==', true), // Filtro 1
+    where('categoryId', '==', categoryId), // Filtro 2
+    orderBy('createdAt', 'desc'), // Ordenação
+  );
+
+  const unsubscribe = onSnapshot(
+    q,
     (snapshot) => {
       const collections: ICollection[] = [];
+
+      console.log(`Received ${snapshot.size} collections for category ${categoryId}`);
 
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -129,6 +195,7 @@ export function listenToCollections(
           description: data.description,
           categoryId: data.categoryId,
           categoryName: data.categoryName,
+          isPublic: data.isPublic,
           createdAt: data.createdAt?.toDate(),
           updatedAt: data.updatedAt?.toDate(),
         } as ICollection);

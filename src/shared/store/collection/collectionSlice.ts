@@ -5,12 +5,12 @@ import { ICollection } from '../../interfaces/ICollection';
 
 interface CollectionState {
   collections: ICollection[];
+
+  selectedCollection: ICollection | null;
   loadingCollections: boolean;
   errorCollections: string | null;
 
-  selectedCollection: ICollection | null;
   cardsInSelectedCollection: ICard[];
-
   loadingCards: boolean;
   errorCards: string | null;
 }

@@ -22,21 +22,21 @@ import { CardModel, CardType } from '@/src/components/Cards/CardModel';
 import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 import { Modal } from '@/src/components/Modals/Modal';
 import { ICard } from '@/src/shared/interfaces/ICard';
-import { UseCollectionView } from './useCollectionView';
+import { useCollectionView } from './useCollectionView';
 
 export function CollectionView() {
   const {
     selectedCollection,
     cardsInSelectedCollection,
     handleGotToPractice,
-    loadingCards,
     handleOpenModalDeleteCollection,
     handleOpenModalDeleteCard,
     isModalVisible,
     handleDeleteCollection,
     handleDeleteCard,
     handleGoBack,
-  } = UseCollectionView();
+    isLoading,
+  } = useCollectionView();
 
   const renderCardItem = useCallback(
     ({ item }: { item: ICard }) => (
@@ -49,11 +49,11 @@ export function CollectionView() {
           title={item.front}
           subTitle={item.back}
           type={CardType.card}
-          editing
+          editing={!selectedCollection?.isPublic}
         />
       </CardContainer>
     ),
-    [handleOpenModalDeleteCard],
+    [handleOpenModalDeleteCard, selectedCollection?.isPublic],
   );
 
   const ListCollectionHeader = useCallback(() => {
@@ -78,26 +78,28 @@ export function CollectionView() {
             <Button onPress={handleGotToPractice} bgColor={theme.colors.tertiary}>
               Iniciar prática
             </Button>
-            <ActionsSubContainer>
-              <Feather
-                name="trash"
-                size={24}
-                onPress={handleOpenModalDeleteCollection}
-                color="#F23333"
-              />
-              <Feather
-                name="edit-3"
-                size={24}
-                color="#000"
-                onPress={() => console.log('Edit pressed')}
-              />
-            </ActionsSubContainer>
+            {selectedCollection?.isPublic ? null : (
+              <ActionsSubContainer>
+                <Feather
+                  name="trash"
+                  size={24}
+                  onPress={handleOpenModalDeleteCollection}
+                  color="#F23333"
+                />
+                <Feather
+                  name="edit-3"
+                  size={24}
+                  color="#000"
+                  onPress={() => console.log('Edit pressed')}
+                />
+              </ActionsSubContainer>
+            )}
           </ActionsContainer>
 
           <AboutTitle>Sobre</AboutTitle>
           <AboutText>{selectedCollection?.description}</AboutText>
 
-          <AddCardButton />
+          {selectedCollection?.isPublic ? null : <AddCardButton />}
         </AboutContainer>
       </View>
     );
@@ -105,6 +107,7 @@ export function CollectionView() {
     handleGotToPractice,
     selectedCollection?.description,
     selectedCollection?.name,
+    selectedCollection?.isPublic,
     handleOpenModalDeleteCollection,
     handleDeleteCard,
     handleDeleteCollection,
@@ -113,7 +116,7 @@ export function CollectionView() {
     handleGoBack,
   ]);
 
-  if (loadingCards) {
+  if (isLoading || !selectedCollection) {
     return <LoadingOverlay isVisible />;
   }
 

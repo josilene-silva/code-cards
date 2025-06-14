@@ -1,46 +1,76 @@
 import { Header } from '@/src/components/Header';
-import { router } from 'expo-router';
-import { Container } from './styles';
+import { Container, EmptyContainer, EmptyText } from './styles';
 
+import EmptyCard from '@/assets/images/card/empty.svg';
+import Logo from '@/assets/images/icon/logo.svg';
+import JavaScript from '@/assets/images/languages/javascript.svg';
 import Python from '@/assets/images/languages/python.svg';
+
 import { CardModel, CardType } from '@/src/components/Cards/CardModel';
+import { LoadingOverlay } from '@/src/components/LoadingOverlay';
+import { ICollection } from '@/src/shared/interfaces/ICollection';
 import { useCallback } from 'react';
+import { useCategoryList } from './useCategoryList';
 
 export function CategoryList() {
+  const { collections, handleRefresh, categoryName, isLoading, router } = useCategoryList();
+
   const HeaderCategoryComponent = () => (
     <Header
-      RightIcon={<Python width={40} height={40} />}
+      RightIcon={
+        categoryName === 'Python' ? (
+          <Python width={40} height={40} />
+        ) : categoryName === 'JavaScript' ? (
+          <JavaScript width={40} height={40} />
+        ) : (
+          <Logo width={40} height={40} />
+        )
+      }
       onBackPress={() => router.back()}
-      title="Python"
+      title={categoryName}
     />
   );
 
+  const ListCollectionEmpty = useCallback(
+    () => (
+      <EmptyContainer>
+        <EmptyCard width={134} height={131} />
+        <EmptyText>Nenhuma coleção foi cadastrada {'\n'} para essa categoria</EmptyText>
+      </EmptyContainer>
+    ),
+    [],
+  );
+
   const renderCollectionItem = useCallback(
-    ({ item }: { item: { title: string; subTitle: string } }) => (
+    ({ item }: { item: ICollection }) => (
       <CardModel
-        title={item.title}
-        subTitle={item.subTitle}
+        title={item.name}
+        subTitle={item.description}
         type={CardType.collection}
-        onPress={() => router.navigate('/(tabs)/(home)/collection-view')}
+        onPress={() =>
+          router.navigate({
+            pathname: '/(tabs)/(home)/collection-view',
+            params: {
+              collectionId: item.id,
+            },
+          })
+        }
       />
     ),
     [],
   );
 
+  if (isLoading) {
+    return <LoadingOverlay isVisible />;
+  }
+
   return (
-    <Container
-      data={[
-        {
-          id: '1',
-          title: 'Estruturas de repetição',
-          subTitle:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra ipsum ac tempor ornare. Sed imperdiet at lectus non tristique. Ut pellentesque lorem quis',
-        },
-        { id: '2', title: 'Loops', subTitle: 'Descrição da coleção 2' },
-        { id: '3', title: 'Condicionais', subTitle: 'Descrição da coleção 3' },
-      ]}
+    <Container<ICollection>
+      data={collections}
       ListHeaderComponent={HeaderCategoryComponent}
       renderItem={renderCollectionItem}
+      ListEmptyComponent={ListCollectionEmpty}
+      handleRefresh={handleRefresh}
     />
   );
 }

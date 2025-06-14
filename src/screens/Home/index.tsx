@@ -24,10 +24,19 @@ import {
   Title,
 } from './styles';
 
+import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 import { useHome } from './useHome';
 
 export function Home() {
-  const { userName, onLogoutPress, collections, onPressCollection, router } = useHome();
+  const {
+    userName,
+    onLogoutPress,
+    collections,
+    onPressCollection,
+    router,
+    handleRefresh,
+    isLoading,
+  } = useHome();
 
   const renderCollectionItem = useCallback(
     ({ item }: { item: ICollection }) => (
@@ -68,14 +77,28 @@ export function Home() {
 
       <CardListContainer>
         <CardShadowContainer>
-          <CardContainer onPress={() => router.navigate('/(tabs)/(home)/category-list')}>
+          <CardContainer
+            onPress={() =>
+              router.navigate({
+                pathname: '/(tabs)/(home)/category-list',
+                params: { categoryId: 'oX0LC5C8PWQtgn5p994E', categoryName: 'Python' },
+              })
+            }
+          >
             <Python width={100} height={100} />
             <CardText>Python</CardText>
           </CardContainer>
         </CardShadowContainer>
 
         <CardShadowContainer>
-          <CardContainer onPress={() => router.navigate('/(tabs)/(home)/category-list')}>
+          <CardContainer
+            onPress={() =>
+              router.navigate({
+                pathname: '/(tabs)/(home)/category-list',
+                params: { categoryId: 'RRZFXsFVg5rOD6129C6F', categoryName: 'JavaScript' },
+              })
+            }
+          >
             <JavaScript width={100} height={100} />
             <CardText>JavaScript</CardText>
           </CardContainer>
@@ -86,12 +109,17 @@ export function Home() {
     </>
   );
 
+  if (isLoading) {
+    return <LoadingOverlay isVisible />;
+  }
+
   return (
     <Container
       data={collections}
       ListHeaderComponent={ListCollectionHeader}
       renderItem={renderCollectionItem}
       ListEmptyComponent={ListCollectionEmpty}
+      handleRefresh={handleRefresh}
     />
   );
 }

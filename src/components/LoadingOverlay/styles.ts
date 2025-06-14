@@ -14,16 +14,16 @@ export const Overlay = styled.View`
 `;
 
 export const LoadingContainer = styled.View`
-  background-color: ${({ theme }: any) => theme.colors.background};
+  background-color: ${({ theme }: any) => theme.colors.themedBackground};
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  padding: 0 20px 20px 30px;
+  padding: 20px;
+  gap: 10px;
 `;
 
 export const LoadingText = styled.Text`
-  margin-bottom: 10px;
   font-size: ${({ theme }: any) => getFontSize(theme.fontSizes.large)};
   font-family: ${({ theme }: any) => theme.fonts.medium};
-  color: ${({ theme }: any) => theme.colors.title};
+  color: ${({ theme }: any) => theme.colors.textInvert};
 `;
