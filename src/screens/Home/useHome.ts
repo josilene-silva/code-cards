@@ -11,6 +11,7 @@ import {
   selectSomeIsLoadingState,
   setSelectedCollection,
 } from '../../shared/store/collection';
+import { Crash } from '@/src/shared/api/firebase/crashlytics';
 
 export function useHome() {
   const userName = useAppSelector(selectCurrentUsername);
@@ -29,6 +30,7 @@ export function useHome() {
       console.log('useEffect: Fetching user-specific collections');
       dispatch(fetchUserSpecificCollections()).unwrap();
     } catch (error) {
+      Crash.recordError(error);
       console.error('Error fetching user-specific collections:', error);
       Toast.show({
         type: 'error',

@@ -31,6 +31,7 @@ import {
   Container,
   ScrollContainer,
 } from './styles';
+import { Crash } from '@/src/shared/api/firebase/crashlytics';
 
 interface ModalVisibility {
   delete: ModalProps;
@@ -139,6 +140,7 @@ export function CollectionCreation() {
       });
       router.back();
     } catch (error) {
+      Crash.recordError(error);
       console.error('Error creating collection:', error);
       Toast.show({
         type: 'error',

@@ -17,6 +17,7 @@ import {
   setSelectedCollection,
   subscribeToCardsInCollection,
 } from '../../shared/store/collection';
+import { Crash } from '@/src/shared/api/firebase/crashlytics';
 
 interface ModalVisibility {
   deleteCollection: ModalProps;
@@ -67,6 +68,7 @@ export const useCollectionView = () => {
 
       resetCard();
     } catch (error) {
+      Crash.recordError(error);
       console.error('Error creating card:', error);
       Toast.show({
         type: 'error',
@@ -140,6 +142,7 @@ export const useCollectionView = () => {
 
       router.back(); // Navigate back after deletion
     } catch (error) {
+      Crash.recordError(error);
       console.error('Error deleting collection:', error);
       Toast.show({
         type: 'error',

@@ -10,6 +10,7 @@ import { NewPractice } from '@/src/shared/interfaces/IPractice';
 import { createPractice, selectCurrentLoadingPractice } from '@/src/shared/store/auth';
 import { useAppDispatch, useAppSelector } from '../../shared/hooks';
 import { selectCollectionState, selectSomeIsLoadingState } from '../../shared/store/collection';
+import { Crash } from '@/src/shared/api/firebase/crashlytics';
 
 export enum CardSide {
   FRONT = 0,
@@ -75,6 +76,7 @@ export const usePractice = () => {
         setCardsWithSide(cardsFormatted);
       }
     } catch (error) {
+      Crash.recordError(error);
       console.error('Error loading collection cards:', error);
       Toast.show({
         type: 'error',

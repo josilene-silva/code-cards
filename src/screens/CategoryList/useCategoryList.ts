@@ -7,6 +7,7 @@ import {
   selectSomeIsLoadingState,
   subscribeToCollectionsByCategory,
 } from '../../shared/store/collection';
+import { Crash } from '@/src/shared/api/firebase/crashlytics';
 
 export const useCategoryList = () => {
   const dispatch = useAppDispatch();
@@ -69,6 +70,7 @@ export const useCategoryList = () => {
         text1: 'Erro ao atualizar as coleções',
         text2: 'Tente novamente mais tarde.',
       });
+      Crash.recordError(error);
       console.error('Error refreshing collections:', error);
     }
   }, [dispatch]);

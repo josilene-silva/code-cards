@@ -13,6 +13,7 @@ import {
   selectCollectionState,
   setSelectedCollectionWithPractices,
 } from '../../shared/store/collection';
+import { Crash } from '@/src/shared/api/firebase/crashlytics';
 
 export function StatisticList() {
   const dispatch = useAppDispatch();
@@ -42,6 +43,7 @@ export function StatisticList() {
       console.log('Carregando coleções com práticas do usuário...');
       dispatch(fetchCollectionsWithUserPractices());
     } catch (error) {
+      Crash.recordError(error);
       console.error('Erro ao carregar coleções com práticas do usuário:', error);
       Toast.show({
         type: 'error',

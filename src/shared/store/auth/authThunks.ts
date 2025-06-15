@@ -14,6 +14,7 @@ import {
   setPracticeError,
   setSelectedPractice,
 } from './authSlice';
+import { Crash } from '../../api/firebase/crashlytics';
 
 export const signInWithGoogle = createAsyncThunk(
   'auth/signInWithGoogle',
@@ -35,6 +36,11 @@ export const signInWithGoogle = createAsyncThunk(
           };
           // Se o usuário não existir, crie um novo usuário no Firestore
           const newUser = await userService.createUser(newUserData);
+          Crash.setUserId(newUser.id); // Define o ID do usuário no Crashlytics
+          Crash.setAttributes({
+            userName: newUser.name,
+            userEmail: newUser.email,
+          });
           dispatch(setAuthenticatedUser(newUser));
         } else {
           console.log('Usuário já existe:', userExists);

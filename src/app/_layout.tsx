@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { router, SplashScreen, Stack, useSegments } from 'expo-router';
+import { router, SplashScreen, Stack, usePathname, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from '../shared/hooks';
 import { store } from '../shared/store';
 import { checkAuthStatus, selectAuthState } from '../shared/store/auth';
 import theme from '../shared/theme';
+import { Analytics } from '../shared/api/firebase/analytics';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,6 +22,14 @@ function RootLayoutContent() {
   const { isAuthenticated, isLoading } = useAppSelector(selectAuthState);
   const dispatch = useAppDispatch();
   const segments = useSegments();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    Analytics.logScreenView({
+      screen_name: pathname,
+      screen_class: pathname,
+    });
+  }, [pathname]);
 
   useEffect(() => {
     dispatch(checkAuthStatus());
