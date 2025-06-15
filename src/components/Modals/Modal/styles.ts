@@ -19,6 +19,6 @@ export const ActionsContainer = styled.View`
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
-
   width: 100%;
+  gap: 5px;
 `;

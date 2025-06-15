@@ -28,3 +28,20 @@ export const SectionTitle = styled.Text`
   margin-bottom: 20px;
   margin-top: 30px;
 `;
+
+export const EmptyContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 50px;
+`;
+
+export const EmptyText = styled.Text`
+  font-size: ${(props: any) => getFontSize(props.theme.fontSizes.medium)};
+  font-family: ${(props: any) => props.theme.fonts.regular};
+  color: ${(props: any) => props.theme.colors.title};
+  margin-top: 22px;
+  width: 85%;
+  text-align: center;
+`;

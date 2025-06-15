@@ -11,6 +11,7 @@ export const Container = styled(BaseButton)`
   border: 0.33px solid ${(props: any) => props.theme.colors.border};
   background-color: ${(props: any) => props.theme.colors.background};
   gap: 15px;
+  align-items: baseline;
 `;
 
 export const CardTitle = styled.Text`
@@ -23,6 +24,17 @@ export const CardSubTitle = styled.Text`
   font-size: ${(props: any) => getFontSize(props.theme.fontSizes.medium)};
   font-family: ${(props: any) => props.theme.fonts.regular};
   color: ${(props: any) => props.theme.colors.text};
+`;
+
+export const CardTagPublic = styled.Text`
+  font-size: ${(props: any) => getFontSize(props.theme.fontSizes.small)};
+  font-family: ${(props: any) => props.theme.fonts.regular};
+  color: ${(props: any) => props.theme.colors.textInvert};
+  background-color: ${(props: any) => props.theme.colors.tertiary};
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-align: right;
+  align-self: flex-start;
 `;
 
 export const CardSubTitleLight = styled(CardSubTitle)`

@@ -8,6 +8,7 @@ import { setSelectedPractice } from '@/src/shared/store/auth';
 import theme from '@/src/shared/theme';
 import { router } from 'expo-router';
 import { useDispatch } from 'react-redux';
+import { View } from 'react-native';
 
 export function PracticeFinish() {
   const dispatch = useDispatch();
@@ -20,14 +21,16 @@ export function PracticeFinish() {
         Parabéns por finalizar essa sessão de estudos. Continue com o bom trabalho!
       </ReviewSubTitle>
       <ButtonContainer>
-        <Button
-          bgColor={theme.colors.tertiary}
-          onPress={() => {
-            router.navigate('/(tabs)/(home)/statistic');
-          }}
-        >
-          Ver meus resultados
-        </Button>
+        <View style={{ width: '100%' }}>
+          <Button
+            bgColor={theme.colors.tertiary}
+            onPress={() => {
+              router.navigate('/(tabs)/(home)/statistic');
+            }}
+          >
+            Ver meus resultados
+          </Button>
+        </View>
         <GoBackButton
           withShadow={false}
           bgColor={'transparent'}

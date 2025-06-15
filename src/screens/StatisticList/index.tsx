@@ -1,5 +1,5 @@
 import { CardModel, CardType } from '@/src/components/Cards/CardModel';
-import { Container, LogoContainer, SectionTitle, Title } from './styles';
+import { Container, EmptyContainer, EmptyText, LogoContainer, SectionTitle, Title } from './styles';
 
 import Logo from '@/assets/images/icon/logo.svg';
 import { LoadingOverlay } from '@/src/components/LoadingOverlay';
@@ -14,6 +14,7 @@ import {
   setSelectedCollectionWithPractices,
 } from '../../shared/store/collection';
 import { Crash } from '@/src/shared/api/firebase/crashlytics';
+import EmptyCard from '@/assets/images/card/empty.svg';
 
 export function StatisticList() {
   const dispatch = useAppDispatch();
@@ -21,7 +22,7 @@ export function StatisticList() {
     useAppSelector(selectCollectionState);
 
   const getLabel = (amount: number) => {
-    return amount === 1 ? `${amount} vez praticada` : `${amount} vezes praticadas`;
+    return amount === 1 ? `${amount} vez praticada` : `${amount} vezes praticada`;
   };
 
   const getLastPracticeTime = (date?: string) => {
@@ -54,6 +55,16 @@ export function StatisticList() {
   }, [dispatch]);
 
   useFocusEffect(loadData);
+
+  const ListCollectionEmpty = useCallback(
+    () => (
+      <EmptyContainer>
+        <EmptyCard width={134} height={131} />
+        <EmptyText>Você ainda não realizou {'\n'} nenhuma prática.</EmptyText>
+      </EmptyContainer>
+    ),
+    [],
+  );
 
   const ListHeader = () => (
     <>
@@ -91,6 +102,7 @@ export function StatisticList() {
       ListHeaderComponent={ListHeader}
       renderItem={renderCollectionItem}
       handleRefresh={loadData}
+      ListEmptyComponent={ListCollectionEmpty}
     />
   );
 }

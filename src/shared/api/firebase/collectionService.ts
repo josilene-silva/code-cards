@@ -193,9 +193,9 @@ export function listenToCollectionsByCategory(
           id: doc.id,
           name: data.name,
           description: data.description,
-          categoryId: data.categoryId,
-          categoryName: data.categoryName,
-          isPublic: data.isPublic,
+          categoryId: data?.categoryId,
+          categoryName: data?.categoryName,
+          isPublic: data?.isPublic,
           createdAt: data.createdAt?.toDate(),
           updatedAt: data.updatedAt?.toDate(),
         } as ICollection);

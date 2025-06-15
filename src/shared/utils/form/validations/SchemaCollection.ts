@@ -4,7 +4,7 @@ import { formMessages } from './messages';
 export const validationCollection = z.object({
   name: z
     .string({ required_error: formMessages.required })
-    .min(5, { message: formMessages.minSize(5) }),
+    .min(2, { message: formMessages.minSize(2) }),
   description: z
     .string({ required_error: formMessages.required })
     .min(5, { message: formMessages.minSize(5) }),

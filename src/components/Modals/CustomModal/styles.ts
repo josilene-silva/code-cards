@@ -17,12 +17,12 @@ interface ModalContentProps {
 }
 
 export const ModalContent = styled.View<ModalContentProps>`
-  background-color: ${({ theme }) => theme.colors.secondary};
+  background-color: ${({ theme }: any) => theme.colors.secondary};
   border-radius: 10px;
   padding: 20px;
-  width: ${({ width }) => width || '80%'};
+  width: ${({ width }: any) => width ?? '100%'};
   max-width: 400px;
-  height: ${({ height }) => height || 'auto'};
+  height: ${({ height }: any) => height ?? 'auto'};
   max-height: ${screenHeight * 0.8}px;
 `;
 

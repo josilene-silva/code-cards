@@ -4,6 +4,7 @@ import {
   ActionsContainer,
   CardSubTitle,
   CardSubTitleLight,
+  CardTagPublic,
   CardTitle,
   Container,
   ShadowContainer,
@@ -21,6 +22,7 @@ interface ICardModelProps extends PressableProps {
   type: CardType;
 
   lastDate?: string;
+  isPublic?: boolean;
 
   editing?: boolean;
   actions?: {
@@ -34,7 +36,7 @@ export function CardModel({
   subTitle,
   type,
   lastDate,
-
+  isPublic,
   editing,
   actions,
   ...props
@@ -42,6 +44,7 @@ export function CardModel({
   return (
     <ShadowContainer>
       <Container {...props}>
+        {isPublic && <CardTagPublic>Pública</CardTagPublic>}
         <CardTitle numberOfLines={1}>{title}</CardTitle>
         {type !== CardType.statistic ? (
           <CardSubTitle numberOfLines={1}>{subTitle}</CardSubTitle>

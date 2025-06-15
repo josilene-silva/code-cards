@@ -5,6 +5,7 @@ import { Container, Logo, Subtitle, Title } from './styles';
 
 import GoogleIcon from '@/assets/images/google.svg';
 import { useLogin } from './useLogin';
+import { View } from 'react-native';
 
 export function Login() {
   const { handleGoogleLogin } = useLogin();
@@ -15,11 +16,7 @@ export function Login() {
       <Subtitle>Boas-vindas ao</Subtitle>
       <Title>CodeCards</Title>
 
-      <Button
-        Icon={<GoogleIcon style={{ marginRight: 15 }} />}
-        fullWidth
-        onPress={handleGoogleLogin}
-      >
+      <Button Icon={<GoogleIcon />} width="100%" fullWidth onPress={handleGoogleLogin}>
         Entrar com Google
       </Button>
     </Container>

@@ -49,6 +49,7 @@ export const ButtonContainer = styled.View<ContainerProps>`
   flex-direction: row;
   justify-content: space-between;
   margin-top: 40px;
+  gap: 10px;
 `;
 
 export const HeaderContainer = styled.View`

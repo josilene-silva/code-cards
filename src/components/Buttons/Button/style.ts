@@ -5,7 +5,7 @@ import { IButtonText, IContainer } from './interfaces';
 
 export const StyledButtonContainer = styled(BaseButton)<IContainer>`
   background-color: ${(props: any) => props.bgColor || props.theme.colors.primary};
-  padding: 15px 40px;
+  padding: 15px 20px;
   width: ${({ fullWidth, width }: IContainer) => (fullWidth ? '80%' : (width ?? 'auto'))};
   border-radius: 10000px;
 
@@ -17,6 +17,8 @@ export const StyledButtonContainer = styled(BaseButton)<IContainer>`
   align-items: center;
   flex-direction: row;
   justify-content: center;
+  flex-grow: 1;
+  gap: 15px;
 `;
 
 export const ButtonText = styled.Text<IButtonText>`
