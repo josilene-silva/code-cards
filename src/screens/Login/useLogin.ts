@@ -1,11 +1,21 @@
 import { useAppDispatch } from '@/src/shared/hooks/useAppDispatch';
 import { signInWithGoogle } from '@/src/shared/store/auth';
+import Toast from 'react-native-toast-message';
 
 export const useLogin = () => {
   const dispatch = useAppDispatch();
 
   const handleGoogleLogin = async () => {
-    await dispatch(signInWithGoogle());
+    try {
+      await dispatch(signInWithGoogle());
+    } catch (error) {
+      console.error('Error during Google login:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Falha ao fazer login com o Google. Tente novamente.',
+      });
+    }
   };
 
   return {

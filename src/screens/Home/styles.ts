@@ -6,7 +6,7 @@ import styled from 'styled-components/native';
 
 export const Container = styled(GenericList)`
   background-color: ${({ theme }: any) => theme.colors.background};
-  padding: 36px 24px 50px;
+  padding: 20px 24px 50px;
 `;
 
 export const LogoContainer = styled.View`
@@ -59,10 +59,13 @@ export const CardListContainer = styled.View`
   width: 100%;
 `;
 
-export const CardShadowContainer = styled(Shadow)``;
+export const CardShadowContainer = styled(Shadow)`
+  flex-grow: 1;
+  flex-basis: content;
+`;
 
 export const CardContainer = styled(BaseButton)`
-  padding: 14px 40px;
+  padding: 14px;
   align-items: center;
   justify-content: center;
   border-radius: 18px;
@@ -70,11 +73,15 @@ export const CardContainer = styled(BaseButton)`
   background-color: ${(props: any) => props.theme.colors.background};
 `;
 
-export const CardText = styled.Text`
+export const CardText = styled.Text.attrs({
+  numberOfLines: 1,
+})`
+  width: 100%;
   font-size: ${(props: any) => getFontSize(props.theme.fontSizes.large)};
   font-family: ${(props: any) => props.theme.fonts.bold};
   color: ${(props: any) => props.theme.colors.title};
   margin-top: 10px;
+  text-align: center;
 `;
 
 export const EmptyContainer = styled.View`

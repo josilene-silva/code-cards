@@ -7,6 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "codecards",
     "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#A2CAFF"
+    },
     "newArchEnabled": true,
     "android": {
       "adaptiveIcon": {
@@ -15,20 +20,13 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.josilenesilva.codecards",
+      "versionCode": 1,
       "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-router",
       "@react-native-firebase/app",
       "@react-native-google-signin/google-signin",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#A2CAFF"
-        }
-      ],
       [
         "expo-build-properties",
         {
@@ -40,6 +38,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b213f409-85ce-426c-8950-29aed9f84dc5"
+      }
     }
   }
 }

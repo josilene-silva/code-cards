@@ -6,7 +6,6 @@ export const HeaderContainer = styled.View`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 36px;
-  margin-top: 10px;
   width: 100%;
 `;
 

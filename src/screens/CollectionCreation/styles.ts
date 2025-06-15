@@ -14,7 +14,7 @@ export const ScrollContainer = styled.ScrollView.attrs({
     paddingBottom: 200,
   },
 })`
-  padding: 36px 24px 00px;
+  padding: 20px 24px 00px;
   padding-bottom: 100px;
 `;
 
@@ -49,13 +49,14 @@ export const BottomSheetTitleContainer = styled.View`
 `;
 
 export const BottomSheetContainer = styled(RBSheet).attrs(({ theme }: any) => ({
-  customModalProps: {
-    animationType: 'fade',
-    statusBarTranslucent: true,
-  },
+  customModalProps: { animationType: 'fade' },
   customStyles: {
     container: {
       height: 'auto',
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
       backgroundColor: theme.colors.themedBackground,
       paddingVertical: 17,
       paddingHorizontal: 20,
@@ -63,11 +64,5 @@ export const BottomSheetContainer = styled(RBSheet).attrs(({ theme }: any) => ({
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
     },
-    wrapper: {},
-    draggableIcon: {
-      backgroundColor: theme.colors.themedBackground,
-      opacity: 0.5,
-    },
   },
-  customAvoidingViewProps: { enabled: false },
 }))``;

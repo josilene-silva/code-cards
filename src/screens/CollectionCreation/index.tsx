@@ -216,7 +216,14 @@ export function CollectionCreation() {
       />
       <Modal {...isModalVisible.attention} />
 
-      <BottomSheetContainer ref={refRBSheet}>
+      <BottomSheetContainer
+        ref={refRBSheet}
+        onOpen={() => {
+          setTimeout(() => {
+            setFocusCard('front');
+          }, 500);
+        }}
+      >
         <BottomSheetTitleContainer>
           <Feather size={40} name="x" style={{ opacity: 0 }} />
           <BottomSheetTitle>
@@ -226,7 +233,10 @@ export function CollectionCreation() {
             size={40}
             color={theme.colors.tertiary}
             name="x"
-            onPress={() => refRBSheet?.current?.close()}
+            onPress={() => {
+              refRBSheet?.current?.close();
+              resetCard();
+            }}
           />
         </BottomSheetTitleContainer>
         <Input

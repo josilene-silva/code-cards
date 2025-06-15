@@ -9,7 +9,6 @@ import type { InputProps } from './interface';
 export function Input<T extends FieldValues>({
   control,
   name,
-  label,
   required,
   pattern,
   keyboardType,
@@ -17,7 +16,7 @@ export function Input<T extends FieldValues>({
   extensiveText,
   numberOfLines = 1,
   ...inputProps
-}: InputProps<T>) {
+}: Readonly<InputProps<T>>) {
   return (
     <Controller
       control={control}

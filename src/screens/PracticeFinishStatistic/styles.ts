@@ -8,7 +8,7 @@ interface IStatisticSubContainer {
 export const Container = styled.ScrollView`
   flex: 1;
   background-color: ${({ theme }: any) => theme.colors.themedBackground};
-  padding: 36px 24px 50px;
+  padding: 20px 24px 50px;
 `;
 
 export const StatisticTitle = styled.Text`
