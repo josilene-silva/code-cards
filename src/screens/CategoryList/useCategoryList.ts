@@ -16,21 +16,31 @@ export const useCategoryList = () => {
   const params = useLocalSearchParams();
   const router = useRouter();
 
-  // Efeito para buscar coleções por categoria quando a tela ganha foco
-  useFocusEffect(
-    useCallback(() => {
-      if (!params.categoryId) {
-        Toast.show({
-          type: 'error',
-          text1: 'Erro ao carregar coleções',
-          text2: 'Categoria não especificada.',
-        });
-        router.back();
-        return;
-      }
+  const loadData = useCallback(() => {
+    if (!params.categoryId) {
+      Toast.show({
+        type: 'error',
+        text1: 'Erro ao carregar coleções',
+        text2: 'Categoria não especificada.',
+      });
+      router.back();
+      return;
+    }
+    try {
       dispatch(subscribeToCollectionsByCategory({ categoryId: params.categoryId as string }));
-    }, [dispatch, params.categoryId, router]),
-  );
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Erro ao carregar as coleções',
+        text2: 'Tente novamente mais tarde.',
+      });
+      Crash.recordError(error);
+      console.error('Error loading collections:', error);
+    }
+  }, [dispatch, params.categoryId, router]);
+
+  // Efeito para buscar coleções por categoria quando a tela ganha foco
+  useFocusEffect(loadData);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,28 +68,11 @@ export const useCategoryList = () => {
     fetchData();
   }, [dispatch, params.categoryId]);
 
-  // Função para lidar com a atualização
-  const handleRefresh = useCallback(async () => {
-    try {
-      await dispatch(
-        subscribeToCollectionsByCategory({ categoryId: 'oX0LC5C8PWQtgn5p994E' }),
-      ).unwrap();
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erro ao atualizar as coleções',
-        text2: 'Tente novamente mais tarde.',
-      });
-      Crash.recordError(error);
-      console.error('Error refreshing collections:', error);
-    }
-  }, [dispatch]);
-
   return {
     collections,
-    handleRefresh,
     categoryName: (params.categoryName as string) ?? '',
     isLoading,
     router,
+    loadData,
   };
 };

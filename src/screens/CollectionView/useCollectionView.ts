@@ -1,12 +1,12 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import Toast from 'react-native-toast-message';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { ModalProps } from '@/src/components/Modals/Modal';
 import { ICollection } from '@/src/shared/interfaces/ICollection';
 import { SchemaCard, validationCard } from '@/src/shared/utils/form/validations/SchemaCard';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '../../shared/hooks';
 import {
   createCard,
@@ -16,6 +16,7 @@ import {
   selectSomeIsLoadingState,
   setSelectedCollection,
   subscribeToCardsInCollection,
+  updateCard,
 } from '../../shared/store/collection';
 import { Crash } from '@/src/shared/api/firebase/crashlytics';
 
@@ -48,12 +49,8 @@ export const useCollectionView = () => {
     defaultValues: {},
   });
 
-  const onSubmitCard = handleSubmitCard(async (data) => {
+  const handleSaveCreateCard = async (data: SchemaCard) => {
     try {
-      console.log('Form Card Data:', data);
-
-      refRBSheet?.current?.close();
-
       await dispatch(
         createCard({ collectionId: selectedCollection!.id, newCardData: data }),
       ).unwrap();
@@ -65,7 +62,6 @@ export const useCollectionView = () => {
       });
 
       refRBSheet.current?.close();
-
       resetCard();
     } catch (error) {
       Crash.recordError(error);
@@ -76,6 +72,50 @@ export const useCollectionView = () => {
         text2: 'Ocorreu um erro ao criar o cartão. Tente novamente.',
       });
       return;
+    }
+  };
+
+  const handleSaveEditedCard = async (data: SchemaCard) => {
+    try {
+      const cardEdited = cardsInSelectedCollection.find((card) => card.id === cardId);
+
+      await dispatch(
+        updateCard({
+          collectionId: selectedCollection!.id,
+          updatedCardData: {
+            id: cardEdited!.id,
+            collectionId: selectedCollection!.id,
+            ...data,
+          },
+        }),
+      ).unwrap();
+
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Seu cartão foi atualizado.',
+      });
+      refRBSheet.current?.close();
+      setCardId(null);
+      resetCard();
+    } catch (error) {
+      Crash.recordError(error);
+      console.error('Error updating card:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Ocorreu um erro ao atualizar o cartão. Tente novamente.',
+      });
+      return;
+    }
+  };
+
+  const onSubmitCard = handleSubmitCard(async (data) => {
+    console.log('Form Card Data:', data);
+    if (cardId === null) {
+      handleSaveCreateCard(data);
+    } else {
+      handleSaveEditedCard(data);
     }
   });
 
@@ -192,6 +232,16 @@ export const useCollectionView = () => {
     }
   };
 
+  const handleEditCard = (cardId: string) => {
+    setCardId(cardId);
+    const cardToEdit = cardsInSelectedCollection.find((card) => card.id === cardId);
+    if (cardToEdit) {
+      setCardValue('front', cardToEdit.front);
+      setCardValue('back', cardToEdit.back);
+    }
+    refRBSheet.current?.open();
+  };
+
   const handleGoBack = () => {
     router.back();
   };
@@ -244,24 +294,21 @@ export const useCollectionView = () => {
   );
 
   return {
-    handleGotToPractice,
-    loadInfos,
     selectedCollection,
     cardsInSelectedCollection,
-    isLoading,
-    isModalVisible,
-    setIsModalVisible,
-    changeModalVisibility,
+    handleGotToPractice,
     handleOpenModalDeleteCollection,
     handleOpenModalDeleteCard,
+    isModalVisible,
     handleDeleteCollection,
     handleDeleteCard,
     handleGoBack,
+    isLoading,
     controlCard,
-    resetCard,
     setFocusCard,
-    setCardValue,
     refRBSheet,
     onSubmitCard,
+    handleEditCard,
+    cardId,
   };
 };

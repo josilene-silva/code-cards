@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { View } from 'react-native';
 
 import {
@@ -14,6 +14,7 @@ import {
   CardContainer,
   CardsList,
   HeaderContainer,
+  HeaderSubContainer,
   HeaderTitle,
 } from './styles';
 
@@ -28,6 +29,7 @@ import { Modal } from '@/src/components/Modals/Modal';
 import { ICard } from '@/src/shared/interfaces/ICard';
 
 import { useCollectionView } from './useCollectionView';
+import { getLanguageImage } from '@/src/shared/utils/getLanguageImage';
 
 export function CollectionView() {
   const {
@@ -45,6 +47,8 @@ export function CollectionView() {
     setFocusCard,
     refRBSheet,
     onSubmitCard,
+    handleEditCard,
+    cardId,
   } = useCollectionView();
 
   const renderCardItem = useCallback(
@@ -53,7 +57,7 @@ export function CollectionView() {
         <CardModel
           actions={{
             onDelete: () => handleOpenModalDeleteCard(item.id),
-            onEdit: () => console.log('Edit pressed'),
+            onEdit: () => handleEditCard(item.id),
           }}
           title={item.front}
           subTitle={item.back}
@@ -62,7 +66,7 @@ export function CollectionView() {
         />
       </CardContainer>
     ),
-    [handleOpenModalDeleteCard, selectedCollection?.isPublic],
+    [handleOpenModalDeleteCard, selectedCollection?.isPublic, handleEditCard],
   );
 
   const ListCollectionHeader = useCallback(() => {
@@ -79,7 +83,15 @@ export function CollectionView() {
             style={{ marginRight: 10 }}
             onPress={handleGoBack}
           />
-          <HeaderTitle>{selectedCollection?.name}</HeaderTitle>
+          <HeaderSubContainer>
+            <HeaderTitle>{selectedCollection?.name}</HeaderTitle>
+
+            {selectedCollection?.isPublic &&
+              React.createElement(getLanguageImage(selectedCollection?.categoryName ?? ''), {
+                width: 40,
+                height: 40,
+              })}
+          </HeaderSubContainer>
         </HeaderContainer>
 
         <AboutContainer>
@@ -113,12 +125,14 @@ export function CollectionView() {
           )}
         </AboutContainer>
 
-        <BottomSheetContainer ref={refRBSheet}>
+        <BottomSheetContainer
+          ref={refRBSheet}
+          onOpen={() => setTimeout(() => setFocusCard('front'), 500)}
+        >
           <BottomSheetTitleContainer>
             <Feather size={40} name="x" style={{ opacity: 0 }} />
             <BottomSheetTitle>
-              {/* {cardIndex !== null ? 'Atualizar Cartão' : 'Adicionar Cartão'} */}
-              Adiconar Cartão
+              {cardId !== null ? 'Atualizar Cartão' : 'Adicionar Cartão'}
             </BottomSheetTitle>
             <Feather
               size={40}
@@ -153,8 +167,7 @@ export function CollectionView() {
             width="100%"
             bgColor={theme.colors.tertiary}
           >
-            {/* {cardIndex !== null ? 'Atualizar' : 'Adicionar'} */}
-            Adicionar
+            {cardId !== null ? 'Atualizar' : 'Adicionar'}
           </Button>
         </BottomSheetContainer>
       </View>
@@ -164,6 +177,7 @@ export function CollectionView() {
     selectedCollection?.description,
     selectedCollection?.name,
     selectedCollection?.isPublic,
+    selectedCollection?.categoryName,
     handleOpenModalDeleteCollection,
     handleDeleteCard,
     handleDeleteCollection,
@@ -174,6 +188,7 @@ export function CollectionView() {
     setFocusCard,
     onSubmitCard,
     refRBSheet,
+    cardId,
   ]);
 
   if (isLoading || !selectedCollection) {

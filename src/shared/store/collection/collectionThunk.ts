@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import * as collectionService from '../../api/firebase/collectionService';
+import { collectionService } from '../../api/firebase/collectionService';
 
 import { practiceService } from '../../api/firebase/practiceService';
 import { userCollectionService } from '../../api/firebase/userCollectionService';
@@ -243,6 +243,9 @@ export const updateCard = createAsyncThunk(
     { dispatch, rejectWithValue, getState },
   ) => {
     try {
+      dispatch(setCardsLoading(true));
+      await collectionService.updateCard(collectionId, updatedCardData);
+
       const currentState = (getState() as RootState).collections.cardsInSelectedCollection;
       const existingCard = currentState.find((card) => card.id === updatedCardData.id);
       const fullUpdatedCard: ICard = {
@@ -251,9 +254,11 @@ export const updateCard = createAsyncThunk(
         collection_id: collectionId, // Garante que collection_id esteja presente
         updatedAt: new Date().toISOString(),
       } as ICard;
+
       dispatch(updateCardOptimistic(fullUpdatedCard));
 
-      await collectionService.updateCard(collectionId, updatedCardData);
+      dispatch(setCardsLoading(false));
+
       return fullUpdatedCard;
     } catch (error: any) {
       dispatch(setCardsError(error.message ?? 'Failed to update card.'));
@@ -269,8 +274,13 @@ export const deleteCard = createAsyncThunk(
     { dispatch, rejectWithValue },
   ) => {
     try {
-      dispatch(removeCardOptimistic(cardId));
+      dispatch(setCardsLoading(true));
       await collectionService.deleteCard(collectionId, cardId);
+
+      dispatch(removeCardOptimistic(cardId));
+
+      dispatch(setCardsLoading(false));
+
       return cardId;
     } catch (error: any) {
       dispatch(setCardsError(error.message ?? 'Failed to delete card.'));

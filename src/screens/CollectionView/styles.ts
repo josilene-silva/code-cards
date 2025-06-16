@@ -17,6 +17,14 @@ export const HeaderTitle = styled.Text`
   font-size: ${({ theme }: any) => getFontSize(theme.fontSizes.extraLarge)};
   color: ${({ theme }: any) => theme.colors.textInvert};
   font-family: ${({ theme }: any) => theme.fonts.bold};
+  flex-shrink: 1;
+`;
+
+export const HeaderSubContainer = styled.View`
+  flex-direction: row;
+  flex: 1;
+  width: 100%;
+  align-items: center;
   margin-top: 43px;
 `;
 
@@ -29,6 +37,7 @@ export const ActionsContainer = styled.View`
   justify-content: space-between;
   width: 100%;
   flex-direction: row;
+  gap: 20px;
 `;
 
 export const ActionsSubContainer = styled.View`
@@ -81,7 +90,6 @@ export const BottomSheetTitle = styled.Text`
 export const BottomSheetContainer = styled(RBSheet).attrs(({ theme }: any) => ({
   customModalProps: {
     animationType: 'fade',
-    statusBarTranslucent: true,
   },
   customStyles: {
     container: {
@@ -99,5 +107,4 @@ export const BottomSheetContainer = styled(RBSheet).attrs(({ theme }: any) => ({
       opacity: 0.5,
     },
   },
-  customAvoidingViewProps: { enabled: false },
 }))``;
