@@ -1,7 +1,5 @@
 export interface ICategory {
   id?: string;
   name: string;
-
-  createdAt?: string;
-  updatedAt?: string;
+  withPublic?: boolean; // variável (interna) para indicar se a categoria possui coleções públicas
 }

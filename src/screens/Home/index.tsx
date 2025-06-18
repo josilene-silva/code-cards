@@ -9,10 +9,16 @@ import { CardModel, CardType } from '@/src/components/Cards/CardModel';
 import { ICollection } from '@/src/shared/interfaces/ICollection';
 import theme from '@/src/shared/theme';
 import {
+  AvatarText,
   CardContainer,
   CardListContainer,
+  CardRanking,
+  CardRankingSubTitle,
+  CardRankingTitle,
   CardShadowContainer,
+  CardTagPublic,
   CardText,
+  CardTitleContainer,
   Container,
   EmptyContainer,
   EmptyText,
@@ -26,10 +32,23 @@ import {
 
 import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 import { useHome } from './useHome';
+import { getLanguageImage } from '@/src/shared/utils/getLanguageImage';
+import { Image } from 'react-native';
 
 export function Home() {
-  const { userName, onLogoutPress, collections, onPressCollection, router, loadData, isLoading } =
-    useHome();
+  const {
+    userName,
+    onLogoutPress,
+    collections,
+    onPressCollection,
+    router,
+    loadData,
+    isLoading,
+    categories,
+    isLoadingCategories,
+    users,
+    isLoadingUsers,
+  } = useHome();
 
   const renderCollectionItem = useCallback(
     ({ item }: { item: ICollection }) => (
@@ -68,43 +87,66 @@ export function Home() {
         <Feather name="log-out" size={24} color={theme.colors.tertiary} onPress={onLogoutPress} />
       </GreetingContainer>
 
-      <SectionTitle>Linguagens/frameworks</SectionTitle>
+      <SectionTitle>Linguagens de programação</SectionTitle>
 
       <CardListContainer>
-        <CardShadowContainer>
-          <CardContainer
-            onPress={() =>
-              router.navigate({
-                pathname: '/(tabs)/(home)/category-list',
-                params: { categoryId: 'oX0LC5C8PWQtgn5p994E', categoryName: 'Python' },
-              })
-            }
-          >
-            <Python width={100} height={100} />
-            <CardText>Python</CardText>
-          </CardContainer>
-        </CardShadowContainer>
+        {categories.map((category) => (
+          <CardShadowContainer key={category.id}>
+            <CardContainer
+              onPress={() =>
+                router.navigate({
+                  pathname: '/(tabs)/(home)/category-list',
+                  params: { categoryId: category.id, categoryName: category.name },
+                })
+              }
+            >
+              {category.withPublic && (
+                <CardTagPublic isPublic={category.withPublic}>Com coleções públicas</CardTagPublic>
+              )}
 
-        <CardShadowContainer>
-          <CardContainer
-            onPress={() =>
-              router.navigate({
-                pathname: '/(tabs)/(home)/category-list',
-                params: { categoryId: 'RRZFXsFVg5rOD6129C6F', categoryName: 'JavaScript' },
-              })
-            }
-          >
-            <JavaScript width={100} height={100} />
-            <CardText>JavaScript</CardText>
-          </CardContainer>
-        </CardShadowContainer>
+              {React.createElement(getLanguageImage(category.name), {
+                width: 50,
+                height: 50,
+              })}
+              <CardText>{category.name}</CardText>
+            </CardContainer>
+          </CardShadowContainer>
+        ))}
+      </CardListContainer>
+
+      <SectionTitle>Ranking de usuários</SectionTitle>
+
+      <CardListContainer>
+        {users?.map((user) => (
+          <CardShadowContainer key={user.id}>
+            <CardRanking>
+              <CardTitleContainer>
+                {user?.photo ? (
+                  <Image
+                    source={{ uri: user.photo }}
+                    style={{ width: 40, height: 40, borderRadius: 100 }}
+                  />
+                ) : (
+                  <AvatarText>{user.name[0]}</AvatarText>
+                )}
+                <CardRankingTitle>{user.name}</CardRankingTitle>
+              </CardTitleContainer>
+
+              <CardRankingSubTitle>Total de</CardRankingSubTitle>
+              <CardRankingSubTitle>Cartões | Práticas</CardRankingSubTitle>
+              <CardRankingSubTitle>
+                {user.totalCardsPracticed} | {user.totalPracticeSessions}
+              </CardRankingSubTitle>
+            </CardRanking>
+          </CardShadowContainer>
+        ))}
       </CardListContainer>
 
       <SectionTitle>Minhas coleções</SectionTitle>
     </>
   );
 
-  if (isLoading) {
+  if (isLoading || isLoadingCategories || isLoadingUsers) {
     return <LoadingOverlay isVisible />;
   }
 

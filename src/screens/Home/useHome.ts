@@ -12,6 +12,10 @@ import {
   setSelectedCollection,
 } from '../../shared/store/collection';
 import { Crash } from '@/src/shared/api/firebase/crashlytics';
+import { fetchCategoriesWithCollections } from '@/src/shared/store/category/categoryThunk';
+import { selectCategoryState } from '@/src/shared/store/category/categorySelector';
+import { fetchUserPracticesRanking } from '@/src/shared/store/user/userThunk';
+import { selectUserState } from '@/src/shared/store/user/userSelector';
 
 export function useHome() {
   const userName = useAppSelector(selectCurrentUsername);
@@ -20,12 +24,14 @@ export function useHome() {
   const router = useRouter();
   const userId = useAppSelector((state) => state.auth.user?.id); // Certifique-se de ter o UID do usuário
   const isLoading = useAppSelector(selectSomeIsLoadingState);
+  const { categories, isLoading: isLoadingCategories } = useAppSelector(selectCategoryState);
+  const { users, isLoading: isLoadingUsers } = useAppSelector(selectUserState);
 
   const onLogoutPress = () => {
     dispatch(signOutUser());
   };
 
-  const loadData = useCallback(() => {
+  const loadCollectionsData = useCallback(() => {
     try {
       console.log('useEffect: Fetching user-specific collections');
       dispatch(fetchUserSpecificCollections()).unwrap();
@@ -52,6 +58,40 @@ export function useHome() {
     console.log(`Navigating to collection with ID: ${collection.id}`);
   };
 
+  const loadCategories = useCallback(() => {
+    try {
+      dispatch(fetchCategoriesWithCollections()).unwrap();
+    } catch (error) {
+      Crash.recordError(error);
+      console.error('Error fetching categories with collections:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro ao carregar categorias',
+        text2: 'Tente novamente mais tarde.',
+      });
+    }
+  }, [dispatch]);
+
+  const loadUserRanking = useCallback(() => {
+    try {
+      dispatch(fetchUserPracticesRanking()).unwrap();
+    } catch (error) {
+      Crash.recordError(error);
+      console.error('Error fetching user practices ranking:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro ao carregar ranking',
+        text2: 'Tente novamente mais tarde.',
+      });
+    }
+  }, [dispatch]);
+
+  const loadData = useCallback(() => {
+    loadCategories();
+    loadCollectionsData();
+    loadUserRanking();
+  }, [loadCategories, loadCollectionsData, loadUserRanking]);
+
   useFocusEffect(loadData);
 
   return {
@@ -62,6 +102,10 @@ export function useHome() {
     onPressCollection,
     userId,
     isLoading,
+    categories,
+    isLoadingCategories,
     loadData,
+    users,
+    isLoadingUsers,
   };
 }

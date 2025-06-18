@@ -38,6 +38,7 @@ import { selectCategoryState } from '@/src/shared/store/category/categorySelecto
 import { useAppSelector } from '@/src/shared/hooks';
 import { DropdownForm } from '@/src/components/Forms/DropdownForm';
 import { Item } from 'react-native-picker-select';
+import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 
 interface ModalVisibility {
   delete: ModalProps;
@@ -52,6 +53,7 @@ export function CollectionCreation() {
   const [cardIndex, setCardIndex] = useState<number | null>(null);
   const { categories } = useAppSelector(selectCategoryState);
   const [formattedCategories, setFormattedCategories] = useState<Item[]>([]);
+  const { isLoading } = useAppSelector(selectCategoryState);
 
   const changeModalVisibility = (type: 'delete' | 'cancel' | 'attention', isVisible?: boolean) => {
     setIsModalVisible((prev) => ({
@@ -241,6 +243,10 @@ export function CollectionCreation() {
     }
   }, [categories]);
 
+  if (isLoading || formattedCategories.length === 0) {
+    return <LoadingOverlay isVisible />;
+  }
+
   return (
     <Container>
       <Modal {...isModalVisible.cancel} />
@@ -337,11 +343,6 @@ export function CollectionCreation() {
 
         <DropdownForm
           items={formattedCategories}
-          placeholder={{
-            label: 'Selecione uma categoria',
-            value: '',
-            inputLabel: 'Selecione uma categoria',
-          }}
           name="categoryId"
           control={control}
           error={formState.errors?.categoryId?.message}

@@ -1,4 +1,11 @@
-import { onSnapshot, orderBy, query } from '@react-native-firebase/firestore';
+import {
+  FieldPath,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from '@react-native-firebase/firestore';
 import { db } from '../../config/firebase/firebaseConfig';
 import { ICategory } from '../../interfaces/ICategory';
 
@@ -10,7 +17,9 @@ export const categoryService = {
     callback: (items: ICategory[]) => void,
     onError: (error: Error) => void,
   ): () => void {
-    const unsubscribe = categoriesCollectionRef.onSnapshot(
+    const q = query(categoriesCollectionRef, orderBy('name', 'asc'));
+    const unsubscribe = onSnapshot(
+      q,
       (snapshot) => {
         const categories: ICategory[] = [];
         snapshot.forEach((doc) => {
@@ -31,5 +40,61 @@ export const categoryService = {
       },
     );
     return unsubscribe;
+  },
+
+  async getPublicCategories(): Promise<ICategory[] | null> {
+    try {
+      const q = query(
+        categoriesCollectionRef,
+        where('isPublic', '==', true), // Filtro para coleções públicas
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        return snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data?.name,
+          } as ICategory;
+        });
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting public categories:', error);
+      throw error;
+    }
+  },
+
+  async getCategoriesByIds(ids: string[]): Promise<ICategory[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    if (ids.length > 10) {
+      console.warn(
+        "Firestore 'in' query limit is 10. Consider splitting calls or using Cloud Functions.",
+      );
+    }
+    try {
+      const q = query(categoriesCollectionRef, where(FieldPath.documentId(), 'in', ids));
+      const snapshot = await getDocs(q);
+
+      const categories: ICategory[] = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        categories.push({
+          id: doc.id,
+          name: data.name,
+        } as ICategory);
+      });
+
+      return categories;
+    } catch (error) {
+      console.error('Error getting collections by IDs:', error);
+      throw error;
+    }
   },
 };

@@ -27,6 +27,7 @@ import {
   updateCollectionOptimistic,
 } from '../collection/collectionSlice';
 import { RootState } from '../index';
+import { userService } from '../../api/firebase/userService';
 
 const getCategoryName = (data: NewCollection | UpdateCollection, getState: RootState) => {
   const categories = getState.categories.categories;
@@ -129,7 +130,7 @@ export const fetchUserSpecificCollections = createAsyncThunk(
   },
 );
 
-// --- NOVO THUNK: Buscar Coleções de um Usuário (logado) e categoryId ---
+// --- NOVO THUNK: Buscar Coleções do Usuário (logado) por Categoria ---
 
 export const fetchUserSpecificCollectionsByCategoryId = createAsyncThunk(
   'collections/fetchUserSpecificCollectionsByCategoryId',
@@ -162,7 +163,7 @@ export const fetchUserSpecificCollectionsByCategoryId = createAsyncThunk(
       for (let i = 0; i < collectionIds.length; i += BATCH_SIZE) {
         const batchIds = collectionIds.slice(i, i + BATCH_SIZE);
         // collectionFirestoreService precisa de um método para buscar por lista de IDs
-        const collectionsBatch = await collectionService.getCollectionsByIdsAndCategoryId(
+        const collectionsBatch = await collectionService.getCollectionsByIdsByCategoryId(
           batchIds,
           categoryId,
         );
@@ -245,11 +246,15 @@ export const updateCollection = createAsyncThunk(
     try {
       dispatch(setCollectionsLoading(true));
 
-      if (!updatedCollectionData.categoryName) {
-        const categoryName = getCategoryName(updatedCollectionData, getState() as RootState);
-        if (categoryName) {
-          updatedCollectionData.categoryName = categoryName;
+      if (updatedCollectionData.categoryId) {
+        if (!updatedCollectionData.categoryName) {
+          const categoryName = getCategoryName(updatedCollectionData, getState() as RootState);
+          if (categoryName) {
+            updatedCollectionData.categoryName = categoryName;
+          }
         }
+      } else {
+        updatedCollectionData.categoryName = '';
       }
       // Opcional: Atualização otimista
       const currentState = (getState() as RootState).collections.collections;

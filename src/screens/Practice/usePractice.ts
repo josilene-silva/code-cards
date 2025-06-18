@@ -43,6 +43,22 @@ export const usePractice = () => {
   // cards with side
   const [cardsWithSide, setCardsWithSide] = useState<CardsProps[]>([]);
 
+  function sortArray(array: any[]) {
+    let currentIndex = array.length,
+      randomIndex;
+
+    // Enquanto ainda houver elementos para embaralhar.
+    while (currentIndex !== 0) {
+      // Escolha um elemento restante.
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+
+      // E o troque com o elemento atual.
+      [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+  }
   const loadCollectionCards = useCallback(async () => {
     try {
       // garante que a coleção selecionada existe
@@ -73,7 +89,7 @@ export const usePractice = () => {
           ...card,
           side: CardSide.FRONT,
         }));
-        setCardsWithSide(cardsFormatted);
+        setCardsWithSide(sortArray(cardsFormatted));
       }
     } catch (error) {
       Crash.recordError(error);

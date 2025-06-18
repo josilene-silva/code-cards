@@ -21,6 +21,7 @@ export const userService = {
         id: docSnapshot.id,
         name: data?.name,
         email: data?.email,
+        photo: data?.photo,
         createdAt: data?.createdAt?.toDate().toISOString(), // Convert to ISO string
         updatedAt: data?.updatedAt?.toDate().toISOString(), // Convert to ISO string
       } as IUser;

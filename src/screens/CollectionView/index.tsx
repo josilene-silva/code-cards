@@ -57,6 +57,9 @@ export function CollectionView() {
     onSubmitCollection,
     formattedCategories,
     formStateCollection,
+    resetCard,
+    resetCollection,
+    setCardId,
   } = useCollectionView();
 
   const renderCardItem = useCallback(
@@ -141,7 +144,11 @@ export function CollectionView() {
               size={40}
               color={theme.colors.tertiary}
               name="x"
-              onPress={() => refBSCard?.current?.close()}
+              onPress={() => {
+                resetCard();
+                setCardId(null);
+                refBSCard?.current?.close();
+              }}
             />
           </BottomSheetTitleContainer>
           <Input
@@ -185,7 +192,10 @@ export function CollectionView() {
               size={40}
               color={theme.colors.tertiary}
               name="x"
-              onPress={() => refBSCollection?.current?.close()}
+              onPress={() => {
+                resetCollection();
+                refBSCollection?.current?.close();
+              }}
             />
           </BottomSheetTitleContainer>
           <Input
@@ -210,11 +220,6 @@ export function CollectionView() {
 
           <DropdownForm
             items={formattedCategories}
-            placeholder={{
-              label: 'Selecione uma categoria',
-              value: '',
-              inputLabel: 'Selecione uma categoria',
-            }}
             name="categoryId"
             control={controlCollection}
             error={formStateCollection.errors?.categoryId?.message}
@@ -238,6 +243,7 @@ export function CollectionView() {
     selectedCollection?.name,
     selectedCollection?.isPublic,
     selectedCollection?.categoryName,
+    selectedCollection?.categoryId,
     handleOpenModalDeleteCollection,
     handleDeleteCard,
     handleDeleteCollection,

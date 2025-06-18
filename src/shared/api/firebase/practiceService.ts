@@ -1,6 +1,16 @@
-import { addDoc, getDocs, onSnapshot, orderBy, query } from '@react-native-firebase/firestore';
+import {
+  addDoc,
+  collection,
+  collectionGroup,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from '@react-native-firebase/firestore';
 import { db, FieldValue } from '../../config/firebase/firebaseConfig';
 import { IPractice, NewPractice } from '../../interfaces/IPractice';
+import { IUserWithPractices } from '../../interfaces/IUser';
 
 const PRACTICES_COLLECTION_NAME = 'practices';
 const USERS_COLLECTION_NAME = 'users';
@@ -109,5 +119,67 @@ export const practiceService = {
       },
     );
     return unsubscribe;
+  },
+  async getAllUsersAndTheirPractices() {
+    try {
+      // 1. Obter todos os usuários
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+
+      const practicesByUser: IUserWithPractices[] = [];
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+        const userPractices: IPractice[] = [];
+
+        const userData = userDoc.data() as IUserWithPractices;
+
+        // 2. Obter as práticas do usuário
+        const practicesSubcollectionRef = collection(db, 'users', userId, 'practices');
+
+        const q = query(practicesSubcollectionRef, orderBy('createdAt', 'desc'));
+
+        const practicesSnapshot = await getDocs(q);
+
+        practicesSnapshot.forEach((practiceDoc) => {
+          userPractices.push({
+            // id: practiceDoc.id,
+            // collectionId: practiceDoc.data()?.collectionId,
+            cardsAmount: practiceDoc.data()?.cardsAmount,
+            // cardsAmountEasy: practiceDoc.data()?.cardsAmountEasy,
+            // cardsAmountMedium: practiceDoc.data()?.cardsAmountMedium,
+            // cardsAmountHard: practiceDoc.data()?.cardsAmountHard,
+            // startTime: practiceDoc.data()?.startTime,
+            endTime: practiceDoc.data()?.endTime,
+          } as IPractice);
+        });
+
+        practicesByUser.push({
+          id: userDoc.id,
+          name: userData.name,
+          photo: userData.photo,
+
+          totalPracticeSessions: userPractices.length,
+          totalCardsPracticed: userPractices.reduce((sum, p) => sum + (p.cardsAmount || 0), 0),
+          lastPracticeTime:
+            userPractices.length > 0
+              ? userPractices
+                  .map((p) => p.endTime)
+                  .filter(Boolean)
+                  .sort()
+                  .reverse()[0] || ''
+              : '',
+        });
+      }
+
+      practicesByUser.sort((a, b) => {
+        return b.totalPracticeSessions - a.totalPracticeSessions; // Ordena do maior para o menor
+      });
+
+      return practicesByUser;
+    } catch (error) {
+      console.error('Erro ao buscar usuários e suas práticas:', error);
+      return null;
+    }
   },
 };

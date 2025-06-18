@@ -369,7 +369,6 @@ export const useCollectionView = () => {
   useFocusEffect(
     useCallback(() => {
       loadInfos();
-
       const unsubscribePromise = dispatch(subscribeToCategories());
       return () => {
         handleUnsubscribe(unsubscribePromise);
@@ -412,5 +411,8 @@ export const useCollectionView = () => {
     onSubmitCollection,
     formattedCategories,
     formStateCollection,
+    resetCard,
+    resetCollection,
+    setCardId,
   };
 };

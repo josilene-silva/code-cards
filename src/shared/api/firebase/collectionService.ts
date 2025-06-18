@@ -1,4 +1,3 @@
-// src/api/firebase/itemFirestoreService.ts
 import { db, FieldValue } from '@/src/shared/config/firebase/firebaseConfig';
 import {
   addDoc,
@@ -69,6 +68,36 @@ export const collectionService = {
     }
   },
 
+  async getPublicCollections(): Promise<ICollection[]> {
+    try {
+      const snapshot = await collectionsRef
+        .where('isPublic', '==', true)
+        .orderBy('createdAt', 'desc')
+        .get();
+      const collections: ICollection[] = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        collections.push({
+          id: doc.id,
+          name: data.name,
+          description: data.description,
+          categoryId: data.categoryId,
+          categoryName: data.categoryName,
+          isPublic: data.isPublic,
+          level: data?.level,
+          createdAt: data.createdAt?.toDate().toISOString(),
+          updatedAt: data.updatedAt?.toDate().toISOString(),
+        } as ICollection);
+      });
+
+      return collections;
+    } catch (error) {
+      console.error('Error getting items:', error);
+      throw error;
+    }
+  },
+
   async getCollectionsByIds(ids: string[]): Promise<ICollection[]> {
     if (ids.length === 0) {
       return [];
@@ -78,6 +107,99 @@ export const collectionService = {
     }
     try {
       const q = query(collectionsRef, where(FieldPath.documentId(), 'in', ids));
+      const snapshot = await getDocs(q);
+
+      const collections: ICollection[] = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        collections.push({
+          id: doc.id,
+          name: data.name,
+          description: data.description,
+          categoryId: data?.categoryId,
+          categoryName: data?.categoryName,
+          isPublic: data?.isPublic,
+          level: data?.level,
+          createdAt: data.createdAt?.toDate().toISOString(),
+          updatedAt: data.updatedAt?.toDate().toISOString(),
+        } as ICollection);
+      });
+
+      collections.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return 0;
+      });
+      return collections;
+    } catch (error) {
+      console.error('Error getting collections by IDs:', error);
+      throw error;
+    }
+  },
+
+  async getCollectionsByIdsWithCategory(ids: string[]): Promise<ICollection[]> {
+    console.log('getCollectionsByIdsWithCategory called with IDs:', ids);
+    if (ids.length === 0) {
+      return [];
+    }
+    if (ids.length > 10) {
+      console.warn("Firestore 'in' query limit is 10. Consider splitting calls or using Cloud s.");
+    }
+    try {
+      const q = query(
+        collectionsRef,
+        where(FieldPath.documentId(), 'in', ids),
+        // where('categoryId', '>', ''),
+      );
+      const snapshot = await getDocs(q);
+
+      const collections: ICollection[] = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        collections.push({
+          id: doc.id,
+          name: data.name,
+          description: data.description,
+          categoryId: data?.categoryId,
+          categoryName: data?.categoryName,
+          isPublic: data?.isPublic,
+          level: data?.level,
+          createdAt: data.createdAt?.toDate().toISOString(),
+          updatedAt: data.updatedAt?.toDate().toISOString(),
+        } as ICollection);
+      });
+
+      collections.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return 0;
+      });
+      return collections;
+    } catch (error) {
+      console.error('Error getting collections by IDs:', error);
+      throw error;
+    }
+  },
+
+  async getCollectionsByIdsByCategoryId(ids: string[], categoryId: string): Promise<ICollection[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    if (ids.length > 10) {
+      console.warn("Firestore 'in' query limit is 10. Consider splitting calls or using Cloud s.");
+    }
+    try {
+      const q = query(
+        collectionsRef,
+        where(FieldPath.documentId(), 'in', ids),
+        where('categoryId', '==', categoryId),
+      );
       const snapshot = await getDocs(q);
 
       const collections: ICollection[] = [];

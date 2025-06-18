@@ -14,7 +14,6 @@ interface Props<T extends FieldValues> extends Omit<PickerSelectProps, 'onValueC
 
 export function DropdownForm<T extends FieldValues = any>({
   control,
-  placeholder,
   items,
   name,
   error,
@@ -28,12 +27,16 @@ export function DropdownForm<T extends FieldValues = any>({
         render={({ field: { onChange, value } }) => (
           <Dropdown
             items={items}
-            placeholder={placeholder}
             onValueChange={onChange}
             useNativeAndroidPickerStyle={false}
             value={value}
             textInputProps={{
               placeholderTextColor: theme.colors.tertiary,
+            }}
+            placeholder={{
+              label: 'Nenhuma',
+              value: '',
+              inputLabel: 'Selecione uma categoria',
             }}
             {...rest}
           />

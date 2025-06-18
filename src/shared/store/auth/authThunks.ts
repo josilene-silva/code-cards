@@ -33,6 +33,7 @@ export const signInWithGoogle = createAsyncThunk(
             uid: firebaseUser.uid,
             name: firebaseUser?.displayName ?? '',
             email: firebaseUser?.email ?? '',
+            photo: firebaseUser?.photoURL ?? '',
           };
           // Se o usuário não existir, crie um novo usuário no Firestore
           const newUser = await userService.createUser(newUserData);

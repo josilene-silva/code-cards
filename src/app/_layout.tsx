@@ -36,8 +36,6 @@ function RootLayoutContent() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (isLoading) return;
-
     const inAuthGroup = segments[0] === '(auth)';
 
     if (isAuthenticated && inAuthGroup) {
@@ -48,6 +46,10 @@ function RootLayoutContent() {
 
     SplashScreen.hideAsync();
   }, [isAuthenticated, isLoading, segments]);
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

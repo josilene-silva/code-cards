@@ -24,12 +24,13 @@ export function GenericList<T>(props: Readonly<GenericListProps<T>>) {
   return (
     <FlatList<T>
       data={data}
+      scrollEnabled={true}
       renderItem={renderItem}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={ListFooterComponent}
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
-      keyExtractor={(item: any, index: number) => item.id || String(index)}
+      keyExtractor={(item: any, index: number) => item.id ?? String(index)}
       contentContainerStyle={{ gap: 15, paddingBottom: !horizontal ? tabBarHeight * 2.5 : 0 }}
       refreshControl={
         handleRefresh && (

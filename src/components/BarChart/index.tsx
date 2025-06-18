@@ -20,15 +20,15 @@ export function BarChart({ data }: IBarChartProps) {
     <Container>
       <BarContainer>
         <BarSubContainer>
-          <BarTitle>{getPercentage(data.easy)}%</BarTitle>
+          <BarTitle>{getPercentage(data.easy).replace('.', ',')}%</BarTitle>
           <Bar type="easy" percentage={getPercentage(data.easy)} />
         </BarSubContainer>
         <BarSubContainer>
-          <BarTitle>{getPercentage(data.medium)}%</BarTitle>
+          <BarTitle>{getPercentage(data.medium).replace('.', ',')}%</BarTitle>
           <Bar type="medium" percentage={getPercentage(data.medium)} />
         </BarSubContainer>
         <BarSubContainer>
-          <BarTitle>{getPercentage(data.hard)}%</BarTitle>
+          <BarTitle>{getPercentage(data.hard).replace('.', ',')}%</BarTitle>
           <Bar type="hard" percentage={getPercentage(data.hard)} />
         </BarSubContainer>
       </BarContainer>
