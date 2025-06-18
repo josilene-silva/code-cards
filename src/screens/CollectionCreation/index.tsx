@@ -1,5 +1,6 @@
 import Logo from '@/assets/images/icon/logo.svg';
 import { Button } from '@/src/components/Buttons';
+
 import { AddCardButton } from '@/src/components/Buttons/AddCardButton';
 import { Input } from '@/src/components/Forms/Input';
 import { Header } from '@/src/components/Header';
@@ -17,7 +18,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { View } from 'react-native';
 import Toast from 'react-native-toast-message'; // Importe o Toast
@@ -32,6 +33,11 @@ import {
   ScrollContainer,
 } from './styles';
 import { Crash } from '@/src/shared/api/firebase/crashlytics';
+import { subscribeToCategories } from '@/src/shared/store/category/categoryThunk';
+import { selectCategoryState } from '@/src/shared/store/category/categorySelector';
+import { useAppSelector } from '@/src/shared/hooks';
+import { DropdownForm } from '@/src/components/Forms/DropdownForm';
+import { Item } from 'react-native-picker-select';
 
 interface ModalVisibility {
   delete: ModalProps;
@@ -44,6 +50,8 @@ export function CollectionCreation() {
   const dispatch = useAppDispatch();
   const [cardsList, setCardsList] = useState<NewCard[]>([]);
   const [cardIndex, setCardIndex] = useState<number | null>(null);
+  const { categories } = useAppSelector(selectCategoryState);
+  const [formattedCategories, setFormattedCategories] = useState<Item[]>([]);
 
   const changeModalVisibility = (type: 'delete' | 'cancel' | 'attention', isVisible?: boolean) => {
     setIsModalVisible((prev) => ({
@@ -118,7 +126,7 @@ export function CollectionCreation() {
         return;
       }
 
-      const collectionCreated = await dispatch(createCollection(data)).unwrap();
+      const collectionCreated = await dispatch(createCollection({ ...data })).unwrap();
       console.log('Collection Created:', collectionCreated);
 
       const requisitions = [];
@@ -138,6 +146,7 @@ export function CollectionCreation() {
         text1: 'Sucesso!',
         text2: 'Sua coleção foi criada.',
       });
+      reset();
       router.back();
     } catch (error) {
       Crash.recordError(error);
@@ -179,16 +188,22 @@ export function CollectionCreation() {
     resetCard();
   });
 
-  useFocusEffect(
-    useCallback(() => {
-      reset();
-      setCardsList([]);
-      resetCard();
-      setCardIndex(null);
-      changeModalVisibility('cancel', false);
-      changeModalVisibility('delete', false);
-    }, [reset, resetCard]),
-  );
+  const handleUnsubscribe = (unsubscribePromise: Promise<any>) => {
+    unsubscribePromise
+      .then((unsubscribe: any) => {
+        if (unsubscribe && typeof unsubscribe === 'function') {
+          unsubscribe();
+        }
+      })
+      .catch((err) => {
+        Toast.show({
+          type: 'error',
+          text1: 'Erro ao carregar categorias',
+          text2: 'Não foi possível carregar as categorias.',
+        });
+        console.error('Failed to unsubscribe from categories:', err);
+      });
+  };
 
   const getOnBackPress = () => {
     if (formState.isDirty || cardsList.length > 0) {
@@ -197,6 +212,34 @@ export function CollectionCreation() {
       router.back();
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      setFormattedCategories([]);
+      reset();
+      setCardsList([]);
+      resetCard();
+      setCardIndex(null);
+      changeModalVisibility('cancel', false);
+      changeModalVisibility('delete', false);
+
+      const unsubscribePromise = dispatch(subscribeToCategories());
+      return () => {
+        handleUnsubscribe(unsubscribePromise);
+      };
+    }, [reset, resetCard, dispatch]),
+  );
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      const aux = categories.map((category) => ({
+        value: category.id as string,
+        label: category?.name as string,
+      }));
+
+      setFormattedCategories(aux);
+    }
+  }, [categories]);
 
   return (
     <Container>
@@ -246,9 +289,9 @@ export function CollectionCreation() {
           name="front"
           placeholder="Frente"
           required
-          maxLength={200}
-          onSubmitEditing={() => setFocusCard('back')}
-          returnKeyType="next"
+          maxLength={1000}
+          numberOfLines={10}
+          multiline
         />
 
         <Input
@@ -290,6 +333,18 @@ export function CollectionCreation() {
           placeholder="Descrição"
           required
           maxLength={1000}
+        />
+
+        <DropdownForm
+          items={formattedCategories}
+          placeholder={{
+            label: 'Selecione uma categoria',
+            value: '',
+            inputLabel: 'Selecione uma categoria',
+          }}
+          name="categoryId"
+          control={control}
+          error={formState.errors?.categoryId?.message}
         />
 
         <AddCardButton

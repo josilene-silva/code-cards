@@ -18,7 +18,6 @@ export const StyledButtonContainer = styled(BaseButton)<IContainer>`
   flex-direction: row;
   justify-content: center;
   flex-grow: 1;
-  gap: 15px;
 `;
 
 export const ButtonText = styled.Text<IButtonText>`

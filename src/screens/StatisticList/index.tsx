@@ -72,7 +72,7 @@ export function StatisticList() {
         <Title>CodeCards</Title>
         <Logo width={49} height={52} />
       </LogoContainer>
-      <SectionTitle>Minhas coleções</SectionTitle>
+      <SectionTitle>Coleções praticadas</SectionTitle>
     </>
   );
 
@@ -83,6 +83,9 @@ export function StatisticList() {
         subTitle={getLabel(item.totalPracticeSessions)}
         lastDate={getLastPracticeTime(item.lastPracticeTime)}
         type={CardType.statistic}
+        isPublic={item.isPublic}
+        level={item.level}
+        category={item.categoryName}
         onPress={() => {
           dispatch(setSelectedCollectionWithPractices(item));
           router.navigate('/(tabs)/(statistics)/statistic');

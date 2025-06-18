@@ -1,14 +1,17 @@
 import { Feather } from '@expo/vector-icons';
-import { PressableProps } from 'react-native';
+import { PressableProps, View } from 'react-native';
 import {
   ActionsContainer,
   CardSubTitle,
   CardSubTitleLight,
+  CardTagCategory,
+  CardTagLevel,
   CardTagPublic,
   CardTitle,
   Container,
   ShadowContainer,
 } from './styles';
+import { CollectionLevels } from '@/src/shared/interfaces/ICollection';
 
 export enum CardType {
   card = 'card',
@@ -23,6 +26,8 @@ interface ICardModelProps extends PressableProps {
 
   lastDate?: string;
   isPublic?: boolean;
+  level?: CollectionLevels;
+  category?: string;
 
   editing?: boolean;
   actions?: {
@@ -30,6 +35,17 @@ interface ICardModelProps extends PressableProps {
     onEdit?: () => void;
   };
 }
+
+const getLevelLabel = (level: CollectionLevels) => {
+  switch (level) {
+    case 'basic':
+      return 'Fácil';
+    case 'intermediate':
+      return 'Intermediário';
+    case 'advanced':
+      return 'Avançada';
+  }
+};
 
 export function CardModel({
   title,
@@ -39,12 +55,21 @@ export function CardModel({
   isPublic,
   editing,
   actions,
+  level,
+  category,
   ...props
 }: Readonly<ICardModelProps>) {
   return (
     <ShadowContainer>
       <Container {...props}>
-        {isPublic && <CardTagPublic>Pública</CardTagPublic>}
+        {(type === CardType.collection || type === CardType.statistic) && (
+          <View style={{ flexDirection: 'row', width: '100%', gap: 8 }}>
+            <CardTagPublic isPublic={isPublic}>{isPublic ? 'Pública' : 'Privada'}</CardTagPublic>
+            {level && <CardTagLevel level={level}>{getLevelLabel(level)}</CardTagLevel>}
+            {category && <CardTagCategory>{category}</CardTagCategory>}
+          </View>
+        )}
+
         <CardTitle numberOfLines={1}>{title}</CardTitle>
         {type !== CardType.statistic ? (
           <CardSubTitle numberOfLines={1}>{subTitle}</CardSubTitle>

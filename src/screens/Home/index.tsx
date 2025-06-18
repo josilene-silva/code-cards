@@ -37,6 +37,8 @@ export function Home() {
         title={item.name}
         subTitle={item.description}
         type={CardType.collection}
+        level={item.level}
+        category={item.categoryName}
         onPress={() => onPressCollection(item)}
       />
     ),

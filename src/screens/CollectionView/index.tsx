@@ -30,6 +30,7 @@ import { ICard } from '@/src/shared/interfaces/ICard';
 
 import { useCollectionView } from './useCollectionView';
 import { getLanguageImage } from '@/src/shared/utils/getLanguageImage';
+import { DropdownForm } from '@/src/components/Forms/DropdownForm';
 
 export function CollectionView() {
   const {
@@ -45,10 +46,17 @@ export function CollectionView() {
     isLoading,
     controlCard,
     setFocusCard,
-    refRBSheet,
+    refBSCard,
     onSubmitCard,
     handleEditCard,
     cardId,
+    setFocusCollection,
+    refBSCollection,
+    controlCollection,
+    handleEditCollection,
+    onSubmitCollection,
+    formattedCategories,
+    formStateCollection,
   } = useCollectionView();
 
   const renderCardItem = useCallback(
@@ -80,13 +88,13 @@ export function CollectionView() {
             name="chevron-left"
             size={40}
             color={theme.colors.textInvert}
-            style={{ marginRight: 10 }}
             onPress={handleGoBack}
           />
           <HeaderSubContainer>
             <HeaderTitle>{selectedCollection?.name}</HeaderTitle>
 
-            {selectedCollection?.isPublic &&
+            {selectedCollection?.categoryName &&
+              selectedCollection.categoryId &&
               React.createElement(getLanguageImage(selectedCollection?.categoryName ?? ''), {
                 width: 40,
                 height: 40,
@@ -107,12 +115,7 @@ export function CollectionView() {
                   onPress={handleOpenModalDeleteCollection}
                   color="#F23333"
                 />
-                <Feather
-                  name="edit-3"
-                  size={24}
-                  color="#000"
-                  onPress={() => console.log('Edit pressed')}
-                />
+                <Feather name="edit-3" size={24} color="#000" onPress={handleEditCollection} />
               </ActionsSubContainer>
             )}
           </ActionsContainer>
@@ -121,12 +124,12 @@ export function CollectionView() {
           <AboutText>{selectedCollection?.description}</AboutText>
 
           {selectedCollection?.isPublic ? null : (
-            <AddCardButton onButtonPress={() => refRBSheet.current?.open()} />
+            <AddCardButton onButtonPress={() => refBSCard.current?.open()} />
           )}
         </AboutContainer>
 
         <BottomSheetContainer
-          ref={refRBSheet}
+          ref={refBSCard}
           onOpen={() => setTimeout(() => setFocusCard('front'), 500)}
         >
           <BottomSheetTitleContainer>
@@ -138,7 +141,7 @@ export function CollectionView() {
               size={40}
               color={theme.colors.tertiary}
               name="x"
-              onPress={() => refRBSheet?.current?.close()}
+              onPress={() => refBSCard?.current?.close()}
             />
           </BottomSheetTitleContainer>
           <Input
@@ -146,9 +149,9 @@ export function CollectionView() {
             name="front"
             placeholder="Frente"
             required
-            maxLength={200}
-            onSubmitEditing={() => setFocusCard('back')}
-            returnKeyType="next"
+            maxLength={1000}
+            numberOfLines={10}
+            multiline
           />
 
           <Input
@@ -170,9 +173,66 @@ export function CollectionView() {
             {cardId !== null ? 'Atualizar' : 'Adicionar'}
           </Button>
         </BottomSheetContainer>
+
+        <BottomSheetContainer
+          ref={refBSCollection}
+          onOpen={() => setTimeout(() => setFocusCollection('name'), 500)}
+        >
+          <BottomSheetTitleContainer>
+            <Feather size={40} name="x" style={{ opacity: 0 }} />
+            <BottomSheetTitle>Editar Coleção</BottomSheetTitle>
+            <Feather
+              size={40}
+              color={theme.colors.tertiary}
+              name="x"
+              onPress={() => refBSCollection?.current?.close()}
+            />
+          </BottomSheetTitleContainer>
+          <Input
+            control={controlCollection}
+            name="name"
+            placeholder="Nome da Coleção"
+            required
+            maxLength={200}
+            onSubmitEditing={() => setFocusCollection('description')}
+            returnKeyType="next"
+          />
+
+          <Input
+            control={controlCollection}
+            name="description"
+            numberOfLines={10}
+            multiline
+            placeholder="Descrição da Coleção"
+            required
+            maxLength={1000}
+          />
+
+          <DropdownForm
+            items={formattedCategories}
+            placeholder={{
+              label: 'Selecione uma categoria',
+              value: '',
+              inputLabel: 'Selecione uma categoria',
+            }}
+            name="categoryId"
+            control={controlCollection}
+            error={formStateCollection.errors?.categoryId?.message}
+          />
+
+          <Button
+            marginTop={24}
+            onPress={onSubmitCollection}
+            width="100%"
+            bgColor={theme.colors.tertiary}
+          >
+            Atualizar
+          </Button>
+        </BottomSheetContainer>
       </View>
     );
   }, [
+    onSubmitCollection,
     handleGotToPractice,
     selectedCollection?.description,
     selectedCollection?.name,
@@ -187,8 +247,14 @@ export function CollectionView() {
     controlCard,
     setFocusCard,
     onSubmitCard,
-    refRBSheet,
+    refBSCard,
     cardId,
+    refBSCollection,
+    controlCollection,
+    setFocusCollection,
+    handleEditCollection,
+    formattedCategories,
+    formStateCollection.errors?.categoryId?.message,
   ]);
 
   if (isLoading || !selectedCollection) {

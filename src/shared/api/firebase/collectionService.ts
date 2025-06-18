@@ -56,6 +56,7 @@ export const collectionService = {
           categoryId: data.categoryId,
           categoryName: data.categoryName,
           isPublic: data.isPublic,
+          level: data?.level,
           createdAt: data.createdAt?.toDate().toISOString(), // Convert to ISO string
           updatedAt: data.updatedAt?.toDate().toISOString(), // Convert to ISO string
         } as ICollection); // Type assertion para garantir o tipo ICollection
@@ -91,6 +92,7 @@ export const collectionService = {
           categoryId: data?.categoryId,
           categoryName: data?.categoryName,
           isPublic: data?.isPublic,
+          level: data?.level,
           createdAt: data.createdAt?.toDate().toISOString(),
           updatedAt: data.updatedAt?.toDate().toISOString(),
         } as ICollection);
@@ -109,6 +111,88 @@ export const collectionService = {
     }
   },
 
+  async getCollectionsByIdsAndCategoryId(
+    ids: string[],
+    categoryId: string,
+  ): Promise<ICollection[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    if (ids.length > 10) {
+      console.warn("Firestore 'in' query limit is 10. Consider splitting calls or using Cloud s.");
+    }
+    try {
+      const q = query(
+        collectionsRef,
+        where(FieldPath.documentId(), 'in', ids),
+        where('categoryId', '==', categoryId),
+      );
+      const snapshot = await getDocs(q);
+
+      const collections: ICollection[] = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        collections.push({
+          id: doc.id,
+          name: data.name,
+          description: data.description,
+          categoryId: data?.categoryId,
+          categoryName: data?.categoryName,
+          isPublic: data?.isPublic,
+          level: data?.level,
+          createdAt: data.createdAt?.toDate().toISOString(),
+          updatedAt: data.updatedAt?.toDate().toISOString(),
+        } as ICollection);
+      });
+
+      collections.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return 0;
+      });
+      return collections;
+    } catch (error) {
+      console.error('Error getting collections by IDs:', error);
+      throw error;
+    }
+  },
+
+  async getPublicCollectionsByCategoryId(categoryId: string): Promise<ICollection[] | null> {
+    try {
+      const q = query(
+        collectionsRef,
+        where('categoryId', '==', categoryId),
+        where('isPublic', '==', true), // Filtro para coleções públicas
+        orderBy('createdAt', 'desc'), // Ordenação por data de criação
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        return snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data?.name,
+            description: data?.description,
+            categoryId: data?.categoryId,
+            categoryName: data?.categoryName,
+            isPublic: data?.isPublic,
+            level: data?.level,
+            createdAt: data?.createdAt?.toDate().toISOString(),
+          } as ICollection;
+        });
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting public collections by category ID:', error);
+      throw error;
+    }
+  },
+
   async getCollectionById(id: string): Promise<ICollection | null> {
     try {
       const doc = await collectionsRef.doc(id).get();
@@ -121,6 +205,7 @@ export const collectionService = {
           categoryId: data?.categoryId,
           categoryName: data?.categoryName,
           isPublic: data?.isPublic,
+          level: data?.level,
           createdAt: data?.createdAt?.toDate().toISOString(),
           updatedAt: data?.updatedAt?.toDate().toISOString(),
         } as ICollection;
@@ -174,7 +259,7 @@ export const collectionService = {
     console.log('Listening to collections by category:', categoryId);
     const q = query(
       collectionsRef, // Sua referência à coleção
-      where('isPublic', '==', true), // Filtro 1
+      // where('isPublic', '==', true), // Filtro 1
       where('categoryId', '==', categoryId), // Filtro 2
       orderBy('createdAt', 'desc'), // Ordenação
     );
@@ -195,6 +280,7 @@ export const collectionService = {
             categoryId: data?.categoryId,
             categoryName: data?.categoryName,
             isPublic: data?.isPublic,
+            level: data?.level,
             createdAt: data.createdAt?.toDate(),
             updatedAt: data.updatedAt?.toDate(),
           } as ICollection);

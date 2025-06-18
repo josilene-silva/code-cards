@@ -38,6 +38,7 @@ export function CategoryList() {
         subTitle={item.description}
         type={CardType.collection}
         isPublic={item?.isPublic}
+        level={item.level}
         onPress={() =>
           router.navigate({
             pathname: '/(tabs)/(home)/collection-view',

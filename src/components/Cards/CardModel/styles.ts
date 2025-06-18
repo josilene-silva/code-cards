@@ -2,6 +2,7 @@ import { Shadow } from '@/src/components/Shadow';
 import { getFontSize } from '@/src/shared/utils/styles';
 import styled from 'styled-components/native';
 import { BaseButton } from '../../Buttons';
+import { CollectionLevels } from '@/src/shared/interfaces/ICollection';
 
 export const ShadowContainer = styled(Shadow)``;
 
@@ -30,11 +31,31 @@ export const CardTagPublic = styled.Text`
   font-size: ${(props: any) => getFontSize(props.theme.fontSizes.small)};
   font-family: ${(props: any) => props.theme.fonts.regular};
   color: ${(props: any) => props.theme.colors.textInvert};
-  background-color: ${(props: any) => props.theme.colors.tertiary};
+  background-color: ${(props: any) =>
+    props?.isPublic ? props.theme.colors.secondary : props.theme.colors.tertiary};
   padding: 2px 8px;
   border-radius: 4px;
   text-align: right;
   align-self: flex-start;
+`;
+
+const getLevelColor = (level: CollectionLevels) => {
+  switch (level) {
+    case 'basic':
+      return 'easy';
+    case 'intermediate':
+      return 'medium';
+    case 'advanced':
+      return 'hard';
+  }
+};
+
+export const CardTagLevel = styled(CardTagPublic)`
+  background-color: ${(props: any) => props.theme.colors[getLevelColor(props.level)]};
+`;
+
+export const CardTagCategory = styled(CardTagPublic)`
+  background-color: ${(props: any) => props.theme.colors.primary};
 `;
 
 export const CardSubTitleLight = styled(CardSubTitle)`

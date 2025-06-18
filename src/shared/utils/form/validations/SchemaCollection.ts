@@ -8,6 +8,7 @@ export const validationCollection = z.object({
   description: z
     .string({ required_error: formMessages.required })
     .min(5, { message: formMessages.minSize(5) }),
+  categoryId: z.string().optional(),
 });
 
 export type SchemaCollection = z.infer<typeof validationCollection>;

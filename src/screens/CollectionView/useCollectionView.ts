@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,8 +17,16 @@ import {
   setSelectedCollection,
   subscribeToCardsInCollection,
   updateCard,
+  updateCollection,
 } from '../../shared/store/collection';
 import { Crash } from '@/src/shared/api/firebase/crashlytics';
+import {
+  SchemaCollection,
+  validationCollection,
+} from '@/src/shared/utils/form/validations/SchemaCollection';
+import { subscribeToCategories } from '@/src/shared/store/category/categoryThunk';
+import { selectCategoryState } from '@/src/shared/store/category/categorySelector';
+import { Item } from 'react-native-picker-select';
 
 interface ModalVisibility {
   deleteCollection: ModalProps;
@@ -34,9 +42,13 @@ export const useCollectionView = () => {
 
   const isLoading = useAppSelector(selectSomeIsLoadingState);
   const [cardId, setCardId] = useState<string | null>(null);
-  const refRBSheet = useRef<{ open: () => void; close: () => void }>(null);
+  const refBSCard = useRef<{ open: () => void; close: () => void }>(null);
+  const refBSCollection = useRef<{ open: () => void; close: () => void }>(null);
 
   const dispatch = useAppDispatch();
+
+  const { categories } = useAppSelector(selectCategoryState);
+  const [formattedCategories, setFormattedCategories] = useState<Item[]>([]);
 
   const {
     control: controlCard,
@@ -46,6 +58,18 @@ export const useCollectionView = () => {
     setValue: setCardValue,
   } = useForm<SchemaCard>({
     resolver: zodResolver(validationCard),
+    defaultValues: {},
+  });
+
+  const {
+    control: controlCollection,
+    handleSubmit: handleSubmitCollection,
+    reset: resetCollection,
+    setFocus: setFocusCollection,
+    setValue: setCollectionValue,
+    formState: formStateCollection,
+  } = useForm<SchemaCollection>({
+    resolver: zodResolver(validationCollection),
     defaultValues: {},
   });
 
@@ -61,7 +85,7 @@ export const useCollectionView = () => {
         text2: 'Seu cartão foi criado.',
       });
 
-      refRBSheet.current?.close();
+      refBSCard.current?.close();
       resetCard();
     } catch (error) {
       Crash.recordError(error);
@@ -95,7 +119,7 @@ export const useCollectionView = () => {
         text1: 'Sucesso!',
         text2: 'Seu cartão foi atualizado.',
       });
-      refRBSheet.current?.close();
+      refBSCard.current?.close();
       setCardId(null);
       resetCard();
     } catch (error) {
@@ -111,11 +135,40 @@ export const useCollectionView = () => {
   };
 
   const onSubmitCard = handleSubmitCard(async (data) => {
-    console.log('Form Card Data:', data);
+    console.log('Form card Data:', data);
     if (cardId === null) {
       handleSaveCreateCard(data);
     } else {
       handleSaveEditedCard(data);
+    }
+  });
+
+  const onSubmitCollection = handleSubmitCollection(async (data) => {
+    console.log('Form Collection Data:', data);
+    try {
+      await dispatch(
+        updateCollection({
+          id: selectedCollection!.id,
+          ...data,
+        }),
+      ).unwrap();
+
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Sua coleção foi atualizada.',
+      });
+      refBSCollection.current?.close();
+      resetCollection();
+    } catch (error) {
+      Crash.recordError(error);
+      console.error('Error updating collection:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Ocorreu um erro ao atualizar a coleção. Tente novamente.',
+      });
+      return;
     }
   });
 
@@ -239,7 +292,16 @@ export const useCollectionView = () => {
       setCardValue('front', cardToEdit.front);
       setCardValue('back', cardToEdit.back);
     }
-    refRBSheet.current?.open();
+    refBSCard.current?.open();
+  };
+
+  const handleEditCollection = () => {
+    if (selectedCollection) {
+      setCollectionValue('name', selectedCollection.name);
+      setCollectionValue('description', selectedCollection.description);
+      setCollectionValue('categoryId', selectedCollection.categoryId ?? '');
+    }
+    refBSCollection.current?.open();
   };
 
   const handleGoBack = () => {
@@ -287,11 +349,44 @@ export const useCollectionView = () => {
     }
   }, [collections, dispatch, params.collectionId, router, selectedCollection]);
 
+  const handleUnsubscribe = (unsubscribePromise: Promise<any>) => {
+    unsubscribePromise
+      .then((unsubscribe: any) => {
+        if (unsubscribe && typeof unsubscribe === 'function') {
+          unsubscribe();
+        }
+      })
+      .catch((err) => {
+        Toast.show({
+          type: 'error',
+          text1: 'Erro ao carregar categorias',
+          text2: 'Não foi possível carregar as categorias.',
+        });
+        console.error('Failed to unsubscribe from categories:', err);
+      });
+  };
+
   useFocusEffect(
     useCallback(() => {
       loadInfos();
-    }, [loadInfos]),
+
+      const unsubscribePromise = dispatch(subscribeToCategories());
+      return () => {
+        handleUnsubscribe(unsubscribePromise);
+      };
+    }, [loadInfos, dispatch]),
   );
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      const aux = categories.map((category) => ({
+        value: category.id as string,
+        label: category?.name as string,
+      }));
+
+      setFormattedCategories(aux);
+    }
+  }, [categories]);
 
   return {
     selectedCollection,
@@ -306,9 +401,16 @@ export const useCollectionView = () => {
     isLoading,
     controlCard,
     setFocusCard,
-    refRBSheet,
+    refBSCard,
     onSubmitCard,
     handleEditCard,
     cardId,
+    refBSCollection,
+    setFocusCollection,
+    controlCollection,
+    handleEditCollection,
+    onSubmitCollection,
+    formattedCategories,
+    formStateCollection,
   };
 };

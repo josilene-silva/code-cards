@@ -1,10 +1,14 @@
 import { IPractice } from './IPractice';
 
+export type CollectionLevels = 'basic' | 'intermediate' | 'advanced';
+
 export interface ICollection {
   id: string;
   name: string;
   description: string;
   isPublic?: boolean;
+
+  level?: CollectionLevels;
 
   categoryId?: string;
   categoryName?: string;

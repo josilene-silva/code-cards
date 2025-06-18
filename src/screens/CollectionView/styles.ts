@@ -26,6 +26,7 @@ export const HeaderSubContainer = styled.View`
   width: 100%;
   align-items: center;
   margin-top: 43px;
+  justify-content: space-between;
 `;
 
 export const AboutContainer = styled.View`

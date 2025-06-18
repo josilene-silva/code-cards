@@ -48,7 +48,10 @@ export function Practice() {
           </Card>
         )}
 
-        <ButtonContainer style={{ alignSelf: 'center' }} visible={item.side === CardSide.FRONT}>
+        <ButtonContainer
+          style={{ width: '70%', alignSelf: 'center' }}
+          visible={item.side === CardSide.FRONT}
+        >
           <Button
             withShadow={false}
             textColor={theme.colors.textInvert}

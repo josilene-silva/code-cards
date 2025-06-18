@@ -28,12 +28,27 @@ import {
 } from '../collection/collectionSlice';
 import { RootState } from '../index';
 
+const getCategoryName = (data: NewCollection | UpdateCollection, getState: RootState) => {
+  const categories = getState.categories.categories;
+
+  const category = categories.find((category) => category.id === data.categoryId);
+
+  return category?.name;
+};
+
 // --- Thunks para Collections ---
 
 export const createCollection = createAsyncThunk(
   'collections/createCollection',
   async (newCollectionData: NewCollection, { dispatch, rejectWithValue, getState }) => {
     try {
+      if (!newCollectionData.categoryName) {
+        const categoryName = getCategoryName(newCollectionData, getState() as RootState);
+        if (categoryName) {
+          newCollectionData.categoryName = categoryName;
+        }
+      }
+
       const collectionWithTempId: ICollection = {
         id: `temp-${Date.now()}`,
         ...newCollectionData,
@@ -114,18 +129,98 @@ export const fetchUserSpecificCollections = createAsyncThunk(
   },
 );
 
+// --- NOVO THUNK: Buscar Coleções de um Usuário (logado) e categoryId ---
+
+export const fetchUserSpecificCollectionsByCategoryId = createAsyncThunk(
+  'collections/fetchUserSpecificCollectionsByCategoryId',
+  async (categoryId: string, { dispatch, rejectWithValue, getState }) => {
+    dispatch(setCollections([])); // Limpa as coleções antes de buscar
+    dispatch(setCollectionsLoading(true)); // Inicia o estado de carregamento
+
+    try {
+      const userId = (getState() as RootState).auth.user?.id; // Obtém o UID do usuário logado
+      if (!userId) {
+        throw new Error('User not authenticated.');
+      }
+
+      // 1. Obter as ligações UserCollection para este usuário
+      const userCollectionsLinks = await userCollectionService.getUserCollectionsByUserId(userId);
+
+      console.log('[APP] Foram encontradas essas coleções no total', userCollectionsLinks.length);
+
+      if (userCollectionsLinks.length === 0) {
+        dispatch(setCollections([])); // Nenhuma coleção encontrada
+        return [];
+      }
+
+      const collectionIds = userCollectionsLinks.map((link) => link.collectionId);
+
+      // 2. Buscar os detalhes das Coleções usando os IDs
+      const privateCollections: ICollection[] = [];
+      const BATCH_SIZE = 10; // Limitação do Firestore para 'in' queries
+
+      for (let i = 0; i < collectionIds.length; i += BATCH_SIZE) {
+        const batchIds = collectionIds.slice(i, i + BATCH_SIZE);
+        // collectionFirestoreService precisa de um método para buscar por lista de IDs
+        const collectionsBatch = await collectionService.getCollectionsByIdsAndCategoryId(
+          batchIds,
+          categoryId,
+        );
+
+        privateCollections.push(...collectionsBatch);
+      }
+
+      console.log(
+        `[APP] Foram encontradas ${privateCollections.length} coleções privadas com essa categoria: ${categoryId}`,
+      );
+
+      const publicCollections =
+        await collectionService.getPublicCollectionsByCategoryId(categoryId);
+
+      console.log(
+        `[APP] Foram encontradas ${publicCollections?.length} coleções públicas com essa categoria: ${categoryId}`,
+      );
+
+      if (publicCollections?.length === 0 && privateCollections.length === 0) {
+        dispatch(setCollections([])); // Nenhuma coleção encontrada
+        return [];
+      }
+      // 3. Combinar e ordenar as coleções
+      console.log(
+        `[APP] Total de coleções privadas: ${privateCollections.length}, públicas: ${publicCollections?.length}`,
+      );
+      console.log(
+        `[APP] Total de coleções combinadas: ${privateCollections.length + (publicCollections?.length ?? 0)}`,
+      );
+      console.log('[APP] Ordenando coleções por data de criação (mais recentes primeiro)');
+
+      const allCollections = [...privateCollections, ...(publicCollections ?? [])].sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return 0;
+      });
+
+      dispatch(setCollections(allCollections)); // Atualiza o estado com as coleções do usuário
+      return allCollections;
+    } catch (error: any) {
+      dispatch(setCollectionsError(error.message ?? 'Failed to fetch user-specific collections.'));
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
 export const subscribeToCollectionsByCategory = createAsyncThunk(
   'collections/subscribeToCollectionsByCategory',
   async ({ categoryId }: { categoryId: string }, { dispatch, rejectWithValue }) => {
-    dispatch(setCollections([])); // Limpa as coleções antes de iniciar a assinatura
-    // Inicia o estado de carregamento
+    dispatch(setCollections([]));
     console.log('[APP] Subscribing to collections by category:', categoryId);
-    // Retorna uma função de unsubscribe para permitir que o componente cancele a assinatura
+
     if (!categoryId) {
       dispatch(setCollectionsError('Category ID is required.'));
       return rejectWithValue('Category ID is required.');
     }
-    // Retorna uma Promise que resolve com a função de unsubscribe
+
     dispatch(setCollectionsLoading(true)); // Inicia o estado de carregamento
 
     return await new Promise<() => void>((resolve, reject) => {
@@ -148,6 +243,14 @@ export const updateCollection = createAsyncThunk(
   'collections/updateCollection',
   async (updatedCollectionData: UpdateCollection, { dispatch, rejectWithValue, getState }) => {
     try {
+      dispatch(setCollectionsLoading(true));
+
+      if (!updatedCollectionData.categoryName) {
+        const categoryName = getCategoryName(updatedCollectionData, getState() as RootState);
+        if (categoryName) {
+          updatedCollectionData.categoryName = categoryName;
+        }
+      }
       // Opcional: Atualização otimista
       const currentState = (getState() as RootState).collections.collections;
       const existingCollection = currentState.find(
@@ -162,8 +265,10 @@ export const updateCollection = createAsyncThunk(
       } as ICollection;
 
       dispatch(updateCollectionOptimistic(fullUpdatedCollection));
+      dispatch(setSelectedCollection(fullUpdatedCollection));
 
       await collectionService.updateCollection(updatedCollectionData);
+      dispatch(setCollectionsLoading(false));
       // O listener tratará a sincronização final.
       return fullUpdatedCollection; // Retorna o item atualizado para fulfilled action
     } catch (error: any) {
@@ -354,16 +459,6 @@ export const fetchCollectionsWithUserPractices = createAsyncThunk(
           }
         }
       });
-
-      // Opcional: Ordenar as práticas dentro de cada coleção (por startTime, por exemplo)
-      // collectionsMap.forEach(col => {
-      //   col.userPractices.sort((a, b) => {
-      //     if (a.startTime && b.startTime) {
-      //       return new Date(b.startTime).getTime() - new Date(a.startTime).getTime(); // Mais recente primeiro
-      //     }
-      //     return 0;
-      //   });
-      // });
 
       // Converte o mapa de volta para um array para o Redux
       const combinedCollections = Array.from(collectionsMap.values());

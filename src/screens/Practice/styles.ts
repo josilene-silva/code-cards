@@ -15,7 +15,7 @@ export const ProgressBar = styled.View`
   width: 100%;
   background-color: #e6e6e6;
   height: 20px;
-  margin-bottom: 50px;
+  margin-bottom: 10%;
 `;
 
 export const Progress = styled(ProgressBar)<{ percentage: number }>`
@@ -50,6 +50,7 @@ export const ButtonContainer = styled.View<ContainerProps>`
   justify-content: space-between;
   margin-top: 40px;
   gap: 10px;
+  margin-bottom: 40px;
 `;
 
 export const HeaderContainer = styled.View`
@@ -75,5 +76,4 @@ export const FrontText = styled.Text`
 
 export const BackText = styled(FrontText)`
   color: ${({ theme }: any) => theme.colors.textInvert};
-  font-size: ${({ theme }: any) => getFontSize(theme.fontSizes.medium)};
 `;
