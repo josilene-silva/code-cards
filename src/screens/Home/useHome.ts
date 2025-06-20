@@ -3,7 +3,7 @@ import { useAppSelector } from '@/src/shared/hooks/useAppSelector';
 import { ICollection } from '@/src/shared/interfaces/ICollection';
 import { selectCurrentUsername, signOutUser } from '@/src/shared/store/auth';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import {
   fetchUserSpecificCollections,
@@ -26,6 +26,7 @@ export function useHome() {
   const isLoading = useAppSelector(selectSomeIsLoadingState);
   const { categories, isLoading: isLoadingCategories } = useAppSelector(selectCategoryState);
   const { users, isLoading: isLoadingUsers } = useAppSelector(selectUserState);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const onLogoutPress = () => {
     dispatch(signOutUser());
@@ -107,5 +108,7 @@ export function useHome() {
     loadData,
     users,
     isLoadingUsers,
+    setIsModalVisible,
+    isModalVisible,
   };
 }

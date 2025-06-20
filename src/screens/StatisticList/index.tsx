@@ -60,7 +60,7 @@ export function StatisticList() {
     () => (
       <EmptyContainer>
         <EmptyCard width={134} height={131} />
-        <EmptyText>Você ainda não realizou {'\n'} nenhuma prática.</EmptyText>
+        <EmptyText>Você ainda não realizou {'\n'} nenhuma prática</EmptyText>
       </EmptyContainer>
     ),
     [],

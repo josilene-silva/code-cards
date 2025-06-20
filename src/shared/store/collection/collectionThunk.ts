@@ -149,11 +149,6 @@ export const fetchUserSpecificCollectionsByCategoryId = createAsyncThunk(
 
       console.log('[APP] Foram encontradas essas coleções no total', userCollectionsLinks.length);
 
-      if (userCollectionsLinks.length === 0) {
-        dispatch(setCollections([])); // Nenhuma coleção encontrada
-        return [];
-      }
-
       const collectionIds = userCollectionsLinks.map((link) => link.collectionId);
 
       // 2. Buscar os detalhes das Coleções usando os IDs

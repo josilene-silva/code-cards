@@ -34,6 +34,7 @@ import { LoadingOverlay } from '@/src/components/LoadingOverlay';
 import { useHome } from './useHome';
 import { getLanguageImage } from '@/src/shared/utils/getLanguageImage';
 import { Image } from 'react-native';
+import { Modal } from '@/src/components/Modals/Modal';
 
 export function Home() {
   const {
@@ -48,6 +49,8 @@ export function Home() {
     isLoadingCategories,
     users,
     isLoadingUsers,
+    setIsModalVisible,
+    isModalVisible,
   } = useHome();
 
   const renderCollectionItem = useCallback(
@@ -74,76 +77,95 @@ export function Home() {
     [],
   );
 
-  const ListCollectionHeader = () => (
-    <>
-      <LogoContainer>
-        <Title>CodeCards</Title>
-        <Logo width={49} height={52} />
-      </LogoContainer>
+  const ListCollectionHeader = useCallback(
+    () => (
+      <>
+        <Modal
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          leftButtonOnPress={() => setIsModalVisible(false)}
+          rightButtonOnPress={onLogoutPress}
+          title="Tem certeza que deseja sair?"
+          subTitle="Você será desconectado da sua conta e retornará à tela de login."
+          leftButtonText="Cancelar"
+          rightButtonText="Sair"
+        />
 
-      <GreetingContainer>
-        <GreetingText>Olá,</GreetingText>
-        <GreetingUseNameText>{userName}!</GreetingUseNameText>
-        <Feather name="log-out" size={24} color={theme.colors.tertiary} onPress={onLogoutPress} />
-      </GreetingContainer>
+        <LogoContainer>
+          <Title>CodeCards</Title>
+          <Logo width={49} height={52} />
+        </LogoContainer>
 
-      <SectionTitle>Linguagens de programação</SectionTitle>
+        <GreetingContainer>
+          <GreetingText>Olá,</GreetingText>
+          <GreetingUseNameText>{userName}!</GreetingUseNameText>
+          <Feather
+            name="log-out"
+            size={24}
+            color={theme.colors.tertiary}
+            onPress={() => setIsModalVisible(true)}
+          />
+        </GreetingContainer>
 
-      <CardListContainer>
-        {categories.map((category) => (
-          <CardShadowContainer key={category.id}>
-            <CardContainer
-              onPress={() =>
-                router.navigate({
-                  pathname: '/(tabs)/(home)/category-list',
-                  params: { categoryId: category.id, categoryName: category.name },
-                })
-              }
-            >
-              {category.withPublic && (
-                <CardTagPublic isPublic={category.withPublic}>Com coleções públicas</CardTagPublic>
-              )}
+        <SectionTitle>Linguagens de programação</SectionTitle>
 
-              {React.createElement(getLanguageImage(category.name), {
-                width: 50,
-                height: 50,
-              })}
-              <CardText>{category.name}</CardText>
-            </CardContainer>
-          </CardShadowContainer>
-        ))}
-      </CardListContainer>
-
-      <SectionTitle>Ranking de usuários</SectionTitle>
-
-      <CardListContainer>
-        {users?.map((user) => (
-          <CardShadowContainer key={user.id}>
-            <CardRanking>
-              <CardTitleContainer>
-                {user?.photo ? (
-                  <Image
-                    source={{ uri: user.photo }}
-                    style={{ width: 40, height: 40, borderRadius: 100 }}
-                  />
-                ) : (
-                  <AvatarText>{user.name[0]}</AvatarText>
+        <CardListContainer>
+          {categories.map((category) => (
+            <CardShadowContainer key={category.id}>
+              <CardContainer
+                onPress={() =>
+                  router.navigate({
+                    pathname: '/(tabs)/(home)/category-list',
+                    params: { categoryId: category.id, categoryName: category.name },
+                  })
+                }
+              >
+                {category.withPublic && (
+                  <CardTagPublic isPublic={category.withPublic}>Coleções públicas</CardTagPublic>
                 )}
-                <CardRankingTitle>{user.name}</CardRankingTitle>
-              </CardTitleContainer>
 
-              <CardRankingSubTitle>Total de</CardRankingSubTitle>
-              <CardRankingSubTitle>Cartões | Práticas</CardRankingSubTitle>
-              <CardRankingSubTitle>
-                {user.totalCardsPracticed} | {user.totalPracticeSessions}
-              </CardRankingSubTitle>
-            </CardRanking>
-          </CardShadowContainer>
-        ))}
-      </CardListContainer>
+                {React.createElement(getLanguageImage(category.name), {
+                  width: 50,
+                  height: 50,
+                })}
+                <CardText>{category.name}</CardText>
+              </CardContainer>
+            </CardShadowContainer>
+          ))}
+        </CardListContainer>
 
-      <SectionTitle>Minhas coleções</SectionTitle>
-    </>
+        <SectionTitle>Top 10 usuários</SectionTitle>
+
+        <CardListContainer>
+          {users?.map((user) => (
+            <CardShadowContainer key={user.id}>
+              <CardRanking>
+                <CardTitleContainer>
+                  {user?.photo ? (
+                    <Image
+                      source={{ uri: user.photo }}
+                      style={{ width: 40, height: 40, borderRadius: 100 }}
+                    />
+                  ) : (
+                    <AvatarText>{user.name[0]}</AvatarText>
+                  )}
+                  <CardRankingTitle>{user.name}</CardRankingTitle>
+                </CardTitleContainer>
+
+                <CardRankingSubTitle>Total de</CardRankingSubTitle>
+                <CardRankingSubTitle>Cartões | Práticas</CardRankingSubTitle>
+                <CardRankingSubTitle>
+                  {user.totalCardsPracticed} | {user.totalPracticeSessions}
+                </CardRankingSubTitle>
+              </CardRanking>
+            </CardShadowContainer>
+          ))}
+        </CardListContainer>
+
+        <SectionTitle>Minhas coleções</SectionTitle>
+      </>
+    ),
+    [userName, categories, users, isModalVisible, setIsModalVisible, onLogoutPress, router],
   );
 
   if (isLoading || isLoadingCategories || isLoadingUsers) {

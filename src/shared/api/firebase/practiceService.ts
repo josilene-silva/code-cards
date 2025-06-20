@@ -154,29 +154,34 @@ export const practiceService = {
           } as IPractice);
         });
 
-        practicesByUser.push({
-          id: userDoc.id,
-          name: userData.name,
-          photo: userData.photo,
+        if (userPractices.length > 0) {
+          // 3. Adicionar o usuário e suas práticas ao array
+          // Verifica se o usuário tem práticas antes de adicioná-lo
+          practicesByUser.push({
+            id: userDoc.id,
+            name: userData.name,
+            photo: userData.photo,
 
-          totalPracticeSessions: userPractices.length,
-          totalCardsPracticed: userPractices.reduce((sum, p) => sum + (p.cardsAmount || 0), 0),
-          lastPracticeTime:
-            userPractices.length > 0
-              ? userPractices
-                  .map((p) => p.endTime)
-                  .filter(Boolean)
-                  .sort()
-                  .reverse()[0] || ''
-              : '',
-        });
+            totalPracticeSessions: userPractices.length,
+            totalCardsPracticed: userPractices.reduce((sum, p) => sum + (p.cardsAmount || 0), 0),
+            lastPracticeTime:
+              userPractices.length > 0
+                ? userPractices
+                    .map((p) => p.endTime)
+                    .filter(Boolean)
+                    .sort()
+                    .reverse()[0] || ''
+                : '',
+          });
+        }
       }
 
       practicesByUser.sort((a, b) => {
         return b.totalPracticeSessions - a.totalPracticeSessions; // Ordena do maior para o menor
       });
 
-      return practicesByUser;
+      // Retorna os 10 primeiros usuários com mais práticas
+      return practicesByUser.slice(0, 10);
     } catch (error) {
       console.error('Erro ao buscar usuários e suas práticas:', error);
       return null;
